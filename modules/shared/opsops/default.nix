@@ -12,7 +12,7 @@ let
     src = pkgs.fetchFromGitHub {
       owner = "frostplexx";
       repo = "opsops";
-      rev = "1.1.0";
+      rev = "v${version}";
       sha256 = "sha256-0bnzSWIJ1yD7FhfFSGdrNsyZnMq7Dhu2dijuG5rG19g=";
     };
 
