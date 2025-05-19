@@ -13,7 +13,7 @@ let
       owner = "frostplexx";
       repo = "opsops";
       rev = "v${version}";
-      sha256 = "sha256-0bnzSWIJ1yD7FhfFSGdrNsyZnMq7Dhu2dijuG5rG19g=";
+      sha256 = "sha256-i2yyQXtMQ+tqVcSM+XHs+5mgPGdJ5vZu5sBoM4D0dlQ=";
     };
 
     cargoHash = "sha256-6IGoaxmQEIlPUU9w9Fa1CMDdhtIoVl9hRGaqqgvxPPQ=";
