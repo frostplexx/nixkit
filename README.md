@@ -54,6 +54,19 @@ programs.default-browser = {
 };
 ```
 
+## ndcli - cli tool for Dim
+
+```nix
+{
+  programs.ndcli = {
+    enable = true;
+    username = "johndoe"; # Your Dim username
+  };
+}
+```
+
+Source: <https://github.com/ionos-cloud/dim/tree/master/ndcli>
+
 # System Modules
 
 ## Darwin
