@@ -1,7 +1,8 @@
-{ lib, ... }:
+_:
 
 {
   imports = [
     ./default_browser
+    ./ndcli
   ];
 }
