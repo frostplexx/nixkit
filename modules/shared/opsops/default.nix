@@ -16,7 +16,7 @@ let
       sha256 = "sha256-iBRK6zatU5WwBDF42TWiy0rYAIVM5mBDbSBsre9ezIs=";
     };
 
-    cargoHash = "sha256-6IGoaxmQEIlPUU9w9Fa1CMDdhtIoVl9hRGaqqgvxPPQ=";
+    cargoHash = "sha256-fOpDooUmsdkoy4E23CCq13Buicl6q4wX7qphbRSble8=";
 
     nativeBuildInputs = with pkgs; [ pkg-config ];
     buildInputs = with pkgs; [ openssl ];
