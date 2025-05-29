@@ -18,7 +18,7 @@ let
 
     cargoHash = "sha256-7zTe2a9hKdaoAIUpifUYh1LPFBUTFMQBC3NYUnoK8/g=";
 
-    nativeBuildInputs = with pkgs; [ pkg-config ];
+    nativeBuildInputs = with pkgs; [ pkg-config sops ];
     buildInputs = with pkgs; [ openssl sops ];
 
     postInstall = ''
