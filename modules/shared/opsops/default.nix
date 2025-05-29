@@ -19,7 +19,7 @@ let
     cargoHash = "sha256-7zTe2a9hKdaoAIUpifUYh1LPFBUTFMQBC3NYUnoK8/g=";
 
     nativeBuildInputs = with pkgs; [ pkg-config ];
-    buildInputs = with pkgs; [ openssl ];
+    buildInputs = with pkgs; [ openssl sops ];
 
     postInstall = ''
       # Create directories for docs
