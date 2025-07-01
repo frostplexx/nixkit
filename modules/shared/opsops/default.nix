@@ -7,13 +7,13 @@ let
 
   opsops = pkgs.rustPlatform.buildRustPackage rec {
     pname = "opsops";
-    version = "1.3.0";
+    version = "1.3.1";
 
     src = pkgs.fetchFromGitHub {
       owner = "frostplexx";
       repo = "opsops";
       rev = "v${version}";
-      sha256 = "sha256-t+sMHIRw2SaIkH2caMgPX0Zteb76oe0oryCtW0hO1kc=";
+      sha256 = "sha256-sUEtf3q3oB2og1Ed8v7qg3K1nWZy2Rp30iwqxd4HBzk=";
     };
 
     cargoHash = "sha256-7zTe2a9hKdaoAIUpifUYh1LPFBUTFMQBC3NYUnoK8/g=";
