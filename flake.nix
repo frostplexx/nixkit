@@ -2,7 +2,7 @@
     description = "Various modules and utilities for NixOS and nix-darwin";
 
     inputs = {
-
+        nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     };
 
     outputs = { ... }: {
