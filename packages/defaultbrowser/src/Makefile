@@ -8,7 +8,7 @@ CFLAGS ?= -O2
 all: $(BIN)
 
 $(BIN):
-	$(CC) -o $(BIN) $(CFLAGS) -framework Foundation -framework ApplicationServices  src/main.m
+	$(CC) -o $(BIN) $(CFLAGS) -framework Foundation -framework ApplicationServices  main.m
 
 clean:
 	rm -f $(BIN)

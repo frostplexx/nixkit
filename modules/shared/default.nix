@@ -1,6 +1,7 @@
 _:
+
 {
   imports = [
-    ./opsops
+    ./opsops.nix
   ];
 }

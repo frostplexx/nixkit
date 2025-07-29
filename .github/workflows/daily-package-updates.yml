@@ -1,0 +1,47 @@
+name: Daily Package Updates
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+env:
+  TZ: Europe/Berlin
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-packages:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v9
+
+      - name: Setup Nix Magic Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v2
+
+      - name: Install dependencies
+        run: |
+          nix profile add nixpkgs#jq
+          nix profile add nixpkgs#nix-update
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run package updates
+        run: ./scripts/update_with_prs.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
