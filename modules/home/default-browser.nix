@@ -1,18 +1,19 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
   cfg = config.programs.default-browser;
-  
-  # Build the defaultbrowser utility only on macOS
-  defaultbrowserPkg = if pkgs.stdenv.isDarwin 
-                      then pkgs.callPackage ./package.nix {} 
-                      else null;
-in {
+in
+{
   options.programs.default-browser = {
     enable = mkEnableOption "Default browser configuration";
-    
+
     browser = mkOption {
       type = types.str;
       default = "";
@@ -22,22 +23,23 @@ in {
   };
 
   config = mkIf cfg.enable {
-    home.packages = [ 
+    home.packages = [
       # Include the xdg-utils for Linux systems
       pkgs.xdg-utils
-    ] ++ lib.optional pkgs.stdenv.isDarwin defaultbrowserPkg;
-    
-    home.activation.setDefaultBrowser = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ]
+    ++ lib.optional pkgs.stdenv.isDarwin pkgs.defaultbrowser;
+
+    home.activation.setDefaultBrowser = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       setDefaultBrowser() {
         local browser="$1"
         local isLinux
-        
+
         # Check if system is Linux
         case "$(uname -s)" in
           Linux*)  isLinux=1 ;;
           *)       isLinux=0 ;;
         esac
-        
+
         if [ "$isLinux" -eq 1 ]; then
           # Linux-specific method using xdg-settings
           echo "Setting default browser on Linux to $browser"
@@ -45,10 +47,12 @@ in {
         else
           # macOS systems use the compiled utility
           echo "Setting default browser to $browser"
-          $DRY_RUN_CMD ${if pkgs.stdenv.isDarwin then "${defaultbrowserPkg}/bin/defaultbrowser" else "defaultbrowser"} "$browser"
+          $DRY_RUN_CMD ${
+            if pkgs.stdenv.isDarwin then "${pkgs.defaultbrowser}/bin/defaultbrowser" else "defaultbrowser"
+          } "$browser"
         fi
       }
-      
+
       setDefaultBrowser "${cfg.browser}"
     '';
   };

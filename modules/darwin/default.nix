@@ -1,8 +1,8 @@
-{ lib, ... }:
+_:
 
 {
   imports = [
-    ./hyperkey
-    ./custom-icons.nix
+    ../shared
+    # Add darwin-specific modules here if needed
   ];
 }

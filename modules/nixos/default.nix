@@ -1,1 +1,8 @@
-_:{}
+_:
+
+{
+  imports = [
+    ../shared
+    # Add NixOS-specific modules here if needed
+  ];
+}
