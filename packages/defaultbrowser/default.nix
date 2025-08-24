@@ -10,10 +10,7 @@ stdenv.mkDerivation {
 
   src = ./src;
 
-  buildInputs = lib.optionals stdenv.isDarwin [
-    darwin.apple_sdk.frameworks.AppKit
-    darwin.apple_sdk.frameworks.Foundation
-  ];
+  buildInputs = [ ];
 
   buildPhase = ''
     make
