@@ -7,46 +7,42 @@
 
 let
   cfg = config.services.hyperkey;
-
-  launchAgentConfig = {
-    ProgramArguments = [
-      "${pkgs.hyperkey}/bin/hyperkey"
-    ]
-    ++ (if !cfg.normalQuickPress then [ "--no-quick-press" ] else [ ])
-    ++ (if cfg.includeShift then [ "--include-shift" ] else [ ]);
-    RunAtLoad = true;
-    KeepAlive = true;
-    EnvironmentVariables = {
-      PATH = "/run/current-system/sw/bin:/usr/bin:/bin:/usr/sbin:/sbin";
-    };
-    SessionCreate = true;
-  };
 in
 {
   options.services.hyperkey = {
-    enable = lib.mkEnableOption "HyperKey service that remaps Caps Lock to a Hyper key";
+    enable = lib.mkEnableOption "HyperKey service that remaps Caps Lock to a Hyper key" // {
+      description = lib.mkDoc ''
+        ⚠️  **DEPRECATED**: This package is deprecated. 
+        Please use [lazykeys](https://github.com/frostplexx/lazykeys) instead for a more modern and feature-rich key mapping solution.
+        
+        HyperKey service that remaps Caps Lock to a Hyper key.
+      '';
+    };
 
+# Legacy options kept for backwards compatibility but no longer functional
     normalQuickPress = lib.mkOption {
       type = lib.types.bool;
       default = true;
-      description = ''
-        If enabled, a quick press of the Caps Lock key will send an Escape key.
-        If disabled, it will only act as the Hyper key.
-      '';
+      description = "DEPRECATED: This option no longer has any effect. Please migrate to lazykeys.";
     };
 
     includeShift = lib.mkOption {
       type = lib.types.bool;
       default = false;
-      description = ''
-        If enabled, the Hyper key will include the Shift modifier (Cmd+Ctrl+Opt+Shift).
-        If disabled, it will only include Cmd+Ctrl+Opt.
-      '';
+      description = "DEPRECATED: This option no longer has any effect. Please migrate to lazykeys.";
     };
   };
 
   config = lib.mkIf cfg.enable {
+    warnings = [
+      ''
+        services.hyperkey is DEPRECATED and will be removed in a future release.
+        Please migrate to lazykeys: https://github.com/frostplexx/lazykeys
+        
+        The hyperkey service will no longer function and only displays deprecation warnings.
+      ''
+    ];
+    
     environment.systemPackages = [ pkgs.hyperkey ];
-    launchd.user.agents.hyperkey.serviceConfig = launchAgentConfig;
   };
 }

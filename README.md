@@ -10,7 +10,7 @@ A collection of various nix utilities packaged as Nix flakes with configurable m
 | **ndcli**          | Command line interface for DIM (DNS and IP Management) | Python CLI     |
 | **dimclient**      | Python client for DIM (dependency of ndcli)            | Python package |
 | **defaultbrowser** | Utility to set the default browser on macOS            | C binary       |
-| **hyperkey**       | Maps Caps Lock to cmd+opt+ctrl (Hyper key)             | C binary       |
+| **hyperkey**       | ⚠️ **DEPRECATED** - Use [lazykeys](https://github.com/frostplexx/lazykeys) instead | C binary       |
 
 ## 🚀 Installation
 
@@ -110,7 +110,12 @@ Source: <https://github.com/ionos-cloud/dim/tree/master/ndcli>
 
 #### Darwin
 
-##### Hyperkey
+##### Hyperkey ⚠️ DEPRECATED
+
+**This package is deprecated.** Please use [lazykeys](https://github.com/frostplexx/lazykeys) instead, which provides a more modern and feature-rich key mapping solution.
+
+<details>
+<summary>Legacy hyperkey configuration (not recommended)</summary>
 
 `hyperkey` is a simple service that maps caps-lock to cmd+opt+ctrl or optionally cmd+opt+ctrl+shift.
 Simply enable it using the following snippet inside your `configuration.nix`:
@@ -124,6 +129,7 @@ services.hyperkey = {
 ```
 
 On first start it will ask for accessibility permission. Afterward you may need to restart the service by running `killall hyperkey` for the permissions to take effect.
+</details>
 
 ##### Custom Icons
 
