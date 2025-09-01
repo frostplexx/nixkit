@@ -1,34 +1,26 @@
 {
   lib,
-  stdenv,
+  writeShellScriptBin,
 }:
 
-stdenv.mkDerivation {
-  pname = "hyperkey";
-  version = "1.0.0";
-
-  src = ./src;
-
-  dontUnpack = true;
-
-  installPhase = ''
-    runHook preInstall
-    mkdir -p $out/bin
-    cp $src/hyperkey $out/bin/hyperkey
-    chmod +x $out/bin/hyperkey
-    runHook postInstall
+let
+  hyperkeyBin = writeShellScriptBin "hyperkey" ''
+    echo "⚠️  ERROR: HyperKey is DEPRECATED!"
+    echo ""
+    echo "This package has been replaced by a more modern solution."
+    echo "Please use lazykeys instead: https://github.com/frostplexx/lazykeys"
+    echo ""
+    echo "To migrate:"
+    echo "1. Remove services.hyperkey from your configuration"
+    echo "2. Install and configure lazykeys instead"
+    echo ""
+    exit 1
   '';
-
+in
+hyperkeyBin // {
   meta = with lib; {
-    description = "Remaps Caps Lock to a Hyper key";
+    description = "⚠️ DEPRECATED: Remaps Caps Lock to a Hyper key. Use lazykeys instead: https://github.com/frostplexx/lazykeys";
     license = licenses.mit;
-    platforms = platforms.darwin;
+    platforms = platforms.all;
   };
-
-  __darwinAllowLocalNetworking = true;
-
-  postInstall = ''
-    echo "NOTE: HyperKey requires accessibility permissions."
-    echo "      Please grant them in System Settings → Privacy & Security → Accessibility."
-  '';
 }
