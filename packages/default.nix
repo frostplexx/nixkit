@@ -12,5 +12,4 @@ in
   inherit dimclient ndcli;
   defaultbrowser = pkgs.callPackage ./defaultbrowser { };
   opsops = pkgs.callPackage ./opsops { };
-  hyperkey = pkgs.callPackage ./hyperkey { };
 }
