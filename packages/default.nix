@@ -10,6 +10,7 @@ in
 
 {
   inherit dimclient ndcli;
+  betterbahn = pkgs.callPackage ./betterbahn { };
   defaultbrowser = pkgs.callPackage ./defaultbrowser { };
   opsops = pkgs.callPackage ./opsops { };
   aerospace-swipe = pkgs.callPackage ./aerospace-swipe { };

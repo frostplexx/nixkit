@@ -27,6 +27,7 @@
         in
         {
           inherit (pkgsWithOverlay)
+            betterbahn
             defaultbrowser
             dimclient
             ndcli
