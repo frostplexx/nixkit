@@ -32,11 +32,12 @@ stdenv.mkDerivation {
     '';
 
     buildPhase = ''
-      make
+      make swipe
     '';
 
     installPhase = ''
-        make install
+      mkdir -p $out/bin
+      cp swipe $out/bin/aerospace-swipe
     '';
 
 
