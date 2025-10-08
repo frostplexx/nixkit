@@ -21,6 +21,14 @@ stdenv.mkDerivation {
       # Fix compatibility with older SDK versions
       substituteInPlace src/haptic.c \
         --replace-fail "kIOMainPortDefault" "kIOMasterPortDefault"
+
+      # Fix duplicate symbol error - make g_event_tap extern in header
+      substituteInPlace src/event_tap.h \
+        --replace-fail "struct event_tap g_event_tap;" "extern struct event_tap g_event_tap;"
+
+      # Define g_event_tap in event_tap.m
+      echo "" >> src/event_tap.m
+      echo "struct event_tap g_event_tap;" >> src/event_tap.m
     '';
 
     buildPhase = ''
