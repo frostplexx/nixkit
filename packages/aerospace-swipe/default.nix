@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkgs,
+  apple-sdk_15,
   ...
 }:
 
-(pkgs.overrideSDK stdenv "15").mkDerivation {
+stdenv.mkDerivation {
 
     pname = "aerospace-swipe";
     version = "1.0.0";
@@ -18,7 +18,9 @@
       rev =  "1845e0e99c4c4bb34453253189a437a698ddbdc8";
     };
 
-    nativeBuildInputs = [ ];
+    nativeBuildInputs = [
+        apple-sdk_15
+    ];
 
     buildPhase = ''
       make
