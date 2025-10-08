@@ -1,12 +1,12 @@
 {
   lib,
-  stdenv,
+  stdenvNoCC,
   fetchFromGitHub,
   apple-sdk_15,
   ...
 }:
 
-stdenv.mkDerivation {
+stdenvNoCC.mkDerivation {
 
     pname = "aerospace-swipe";
     version = "1.0.0";
