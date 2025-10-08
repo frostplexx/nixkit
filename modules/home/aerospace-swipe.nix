@@ -57,8 +57,20 @@ in
 
     config = mkIf cfg.enable {
         home.packages = lib.optional pkgs.stdenv.isDarwin pkgs.aerospace-swipe;
-        
+
         home.file.".config/aerospace-swipe/config.json".source = configFile;
+
+        launchd.agents.aerospace-swipe = {
+            enable = true;
+            config = {
+                ProgramArguments = [ "${pkgs.aerospace-swipe}/bin/aerospace-swipe" ];
+                RunAtLoad = true;
+                KeepAlive = true;
+                ProcessType = "Interactive";
+                StandardOutPath = "/tmp/aerospace-swipe.log";
+                StandardErrorPath = "/tmp/aerospace-swipe.log";
+            };
+        };
     };
 
 
