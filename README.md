@@ -92,6 +92,22 @@ programs.default-browser = {
 };
 ```
 
+#### Aerospace Swipe
+
+A service that lets you swipe on your trackpad to move between aerosapce spaces
+
+```nix
+# Enable and configure the default browser
+programs.aerospace-swipe = {
+    enable = true;
+    haptic = false;
+    natural_swipe = false;
+    wrap_around = true;
+    skip_empty = true;
+    fingers = 3;
+};
+```
+
 #### ndcli - cli tool for Dim
 
 ```nix
