@@ -19,7 +19,7 @@ stdenv.mkDerivation {
     };
 
     nativeBuildInputs = [
-        pkgs.apple-sdk
+        pkgs.apple-sdk_15
     ];
 
     buildPhase = ''
