@@ -13,6 +13,7 @@ stdenv.mkDerivation {
       owner = "acsandmann";
       repo = "aerospace-swipe";
       hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+      rev =  "1845e0e99c4c4bb34453253189a437a698ddbdc8";
     };
 
     buildPhase = ''
