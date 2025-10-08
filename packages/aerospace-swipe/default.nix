@@ -1,12 +1,11 @@
 {
   lib,
-  stdenvNoCC,
+  stdenv,
   fetchFromGitHub,
-  apple-sdk_15,
   ...
 }:
 
-stdenvNoCC.mkDerivation {
+stdenv.mkDerivation {
 
     pname = "aerospace-swipe";
     version = "1.0.0";
@@ -18,9 +17,11 @@ stdenvNoCC.mkDerivation {
       rev =  "1845e0e99c4c4bb34453253189a437a698ddbdc8";
     };
 
-    nativeBuildInputs = [
-        apple-sdk_15
-    ];
+    postPatch = ''
+      # Fix compatibility with older SDK versions
+      substituteInPlace src/haptic.c \
+        --replace-fail "kIOMainPortDefault" "kIOMasterPortDefault"
+    '';
 
     buildPhase = ''
       make
