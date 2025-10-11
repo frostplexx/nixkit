@@ -33,8 +33,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          nix profile add nixpkgs#jq
           nix profile add nixpkgs#nix-update
+          nix profile add nixpkgs#python3
+          nix profile add nixpkgs#gh
 
       - name: Configure Git
         run: |
@@ -42,6 +43,6 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Run package updates
-        run: ./scripts/update_with_prs.sh
+        run: ./scripts/update.py
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
