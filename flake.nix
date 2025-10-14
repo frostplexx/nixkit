@@ -31,7 +31,6 @@
             dimclient
             ndcli
             opsops
-            hyperkey
             ;
         }
       );
@@ -62,13 +61,17 @@
           packages = with nixpkgs.legacyPackages.${system}; [
             nix-update
             git
+            python3
           ];
 
           shellHook = ''
             echo "=> nixkit development environment ready!"
             echo "Available commands:"
-            echo "  nix-update <package> --build --commit (--version <version>)  # Update package versions"
-            echo "  ./update.sh                                                  # Update all packages automatically"
+            echo "  ./scripts/update.py                                                               # Update all packages (auto PR in CI)"
+            echo ""
+            echo "Manual updates:"
+            echo "  nix-update <package> --flake --build --commit                                     # Update versioned package"
+            echo "  nix-update <package> --flake --build --commit --version=branch --url <github-url> # Update unstable/branch package"
           '';
         };
       });

@@ -12,5 +12,5 @@ in
   inherit dimclient ndcli;
   defaultbrowser = pkgs.callPackage ./defaultbrowser { };
   opsops = pkgs.callPackage ./opsops { };
-  hyperkey = pkgs.callPackage ./hyperkey { };
+  aerospace-swipe = pkgs.callPackage ./aerospace-swipe { };
 }

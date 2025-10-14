@@ -10,7 +10,6 @@ A collection of various nix utilities packaged as Nix flakes with configurable m
 | **ndcli**          | Command line interface for DIM (DNS and IP Management) | Python CLI     |
 | **dimclient**      | Python client for DIM (dependency of ndcli)            | Python package |
 | **defaultbrowser** | Utility to set the default browser on macOS            | C binary       |
-| **hyperkey**       | Maps Caps Lock to cmd+opt+ctrl (Hyper key)             | C binary       |
 
 ## 🚀 Installation
 
@@ -93,6 +92,22 @@ programs.default-browser = {
 };
 ```
 
+#### Aerospace Swipe
+
+A service that lets you swipe on your trackpad to move between aerosapce spaces
+
+```nix
+# Enable and configure the default browser
+programs.aerospace-swipe = {
+    enable = true;
+    haptic = false;
+    natural_swipe = false;
+    wrap_around = true;
+    skip_empty = true;
+    fingers = 3;
+};
+```
+
 #### ndcli - cli tool for Dim
 
 ```nix
@@ -109,21 +124,6 @@ Source: <https://github.com/ionos-cloud/dim/tree/master/ndcli>
 ### System Modules
 
 #### Darwin
-
-##### Hyperkey
-
-`hyperkey` is a simple service that maps caps-lock to cmd+opt+ctrl or optionally cmd+opt+ctrl+shift.
-Simply enable it using the following snippet inside your `configuration.nix`:
-
-```nix
-services.hyperkey = {
-    enable = true;
-    normalQuickPress = true; # Quick press of Caps Lock to toggle it
-    includeShift = false; # Hyper key will be Cmd+Ctrl+Opt (without Shift)
-};
-```
-
-On first start it will ask for accessibility permission. Afterward you may need to restart the service by running `killall hyperkey` for the permissions to take effect.
 
 ##### Custom Icons
 
@@ -205,8 +205,8 @@ nixkit/
 │   ├── opsops/
 │   ├── ndcli/
 │   ├── dimclient/
-│   ├── defaultbrowser/
-│   └── hyperkey/
+│   └── defaultbrowser/
+│
 ├── modules/
 │   ├── home/                    # Home Manager modules
 │   │   ├── default-browser.nix
@@ -218,7 +218,6 @@ nixkit/
 │   ├── nixos/                   # NixOS-specific modules
 │   │   └── default.nix
 │   └── darwin/                  # Darwin-specific modules
-│       ├── hyperkey.nix
 │       └── default.nix
 ├── flake.nix                    # Flake definition
 ├── overlay.nix                  # Package overlay
