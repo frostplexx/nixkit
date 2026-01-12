@@ -250,7 +250,8 @@ def handle_pr(package: str, branch: str, version_info: str):
             ["gh", "pr", "edit", branch, "--title", title, "--body", body],
             capture=False,
         )
-    elif pr_state == "NOT_FOUND":
+    else:
+        # Create new PR for NOT_FOUND, MERGED, or CLOSED states
         log("info", f"Creating PR for {package}")
         run_command(
             [
