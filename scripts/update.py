@@ -179,20 +179,20 @@ def update_package(package: str, create_pr: bool = False) -> UpdateResult:
             version_info = match.group(1) if match else "unknown"
 
             if create_pr:
-                # Check if there are actual changes to push
+                # Check if there are new commits compared to main
                 diff_exit_code, _ = run_command(
-                    ["git", "diff", "--quiet", "HEAD"], capture=True
+                    ["git", "diff", "--quiet", "main..HEAD"], capture=True
                 )
 
                 if diff_exit_code != 0:
-                    # There are changes, push them
+                    # There are new commits, push them
                     push_code, _ = run_command(
                         ["git", "push", "origin", branch_name, "--force"], capture=False
                     )
                     if push_code == 0:
                         handle_pr(package, branch_name, version_info)
                 else:
-                    # No changes, but PR might need updating
+                    # No new commits, but PR might need updating
                     handle_pr(package, branch_name, version_info)
 
             return UpdateResult(
