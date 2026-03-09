@@ -26,7 +26,7 @@ in
       type = types.str;
       default = "";
       example = "/Users/alice/other-dotfiles";
-      description = "Overrides $NH_FLAKE for checking for updates";
+      description = "Sets the flake path.";
     };
 
     command = mkOption {
@@ -50,6 +50,19 @@ in
     launchd.agents.nixupdater = {
       enable = true;
       config = {
+        EnvironmentVariables = {
+          PATH = builtins.concatStringsSep ":" [
+            "/run/current-system/sw/bin"
+            "/etc/profiles/per-user/${config.home.username}/bin"
+            "/opt/homebrew/bin"
+            "/usr/local/bin"
+            "/usr/bin"
+            "/bin"
+            "/usr/sbin"
+            "/sbin"
+          ];
+          # NH_FLAKE = cfg.flake;
+        };
         ProgramArguments = [
           "${pkgs.nixupdater}/NixUpdater.app/Contents/MacOS/NixUpdater"
           "--interval"

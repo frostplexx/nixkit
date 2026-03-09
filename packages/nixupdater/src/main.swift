@@ -103,22 +103,7 @@ func parseArgs() -> Config {
 
 // MARK: - Constants
 
-let kPATH = [
-    "/opt/homebrew/bin",
-    "/opt/homebrew/sbin",
-    "/Users/daniel/.nix-profile/bin",
-    "/etc/profiles/per-user/daniel/bin",
-    "/run/current-system/sw/bin",
-    "/nix/var/nix/profiles/default/bin",
-    "/usr/local/bin",
-    "/usr/bin",
-    "/bin",
-    "/usr/sbin",
-    "/sbin",
-    "/nix/store/92r5r7a0lq23al79rxb72ag3iqx25rkm-kitty-0.45.0/bin",
-    "/nix/store/p46q9h4acq6rzz5rff7yvlbzdgn6xl4l-imagemagick-7.1.2-13/bin",
-    "/nix/store/25wxz2cv5qrrmfdhcd7dk4zd83fdhwal-ncurses-6.6-dev/bin",
-].joined(separator: ":")
+let kPATH = ProcessInfo.processInfo.environment["PATH"] ?? "/usr/bin:/bin:/usr/sbin:/sbin"
 
 // MARK: - AppDelegate
 
