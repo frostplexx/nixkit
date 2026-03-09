@@ -1,4 +1,3 @@
-
 {
   lib,
   stdenv,
@@ -11,7 +10,12 @@ stdenv.mkDerivation {
 
   src = ./src;
 
-  buildInputs = [ ];
+buildInputs = with darwin.apple_sdk.frameworks; [
+  Cocoa
+  Foundation
+  AppKit
+  # add others as needed, e.g. ServiceManagement, SystemConfiguration, etc.
+];
 
   buildPhase = ''
     make
