@@ -15,7 +15,7 @@ in
   options.programs.nixupdater = {
     enable = mkEnableOption "nixupdater configuration";
 
-    intervall = mkOption {
+    interval = mkOption {
       type = types.int;
       default = 1800;
       example = "300";
@@ -52,8 +52,8 @@ in
       config = {
         ProgramArguments = [
           "${pkgs.nixupdater}/NixUpdater.app/Contents/MacOS/NixUpdater"
-          "--intervall"
-          "${toString cfg.intervall}"
+          "--interval"
+          "${toString cfg.interval}"
           "--flake"
           "${cfg.flake}"
           "--command"
