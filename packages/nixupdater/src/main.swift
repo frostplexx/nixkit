@@ -209,6 +209,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return img
     }
 
+    /// Resolve the flake directory path from config or environment.
+    private func resolvedFlakePath() -> String? {
+        let raw: String
+        if let override = config.flakePath {
+            raw = override
+        } else if let env = ProcessInfo.processInfo.environment["NH_FLAKE"] {
+            raw = env
+        } else {
+            return nil
+        }
+
+        return raw.hasPrefix("/")
+            ? raw
+            : (raw as NSString).expandingTildeInPath
+    }
+
     @objc func openTerminalAndUpdate() {
         let fishPath = kPATH.replacingOccurrences(of: ":", with: " ")
 
@@ -217,13 +233,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let scriptURL = URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent("nixupdater-run-\(UUID().uuidString).fish")
 
-        let fishScript = """
-        set -x PATH \(fishPath)
-        \(config.updateCommand)
-        read -P "Press Enter to close..."
-        touch \(sentinel.path)
-        exit 0
-        """
+        // Resolve the flake directory so the command runs inside it.
+        let flakeDir = resolvedFlakePath()
+
+        var fishLines: [String] = []
+        fishLines.append("set -x PATH \(fishPath)")
+        if let dir = flakeDir {
+            fishLines.append("cd \(dir); or begin; echo 'Failed to cd into flake directory'; read -P \"Press Enter to close...\"; touch \(sentinel.path); exit 1; end")
+        }
+        fishLines.append(config.updateCommand)
+        fishLines.append("read -P \"Press Enter to close...\"")
+        fishLines.append("touch \(sentinel.path)")
+        fishLines.append("exit 0")
+
+        let fishScript = fishLines.joined(separator: "\n")
 
         do {
             try fishScript.write(to: scriptURL, atomically: true, encoding: .utf8)
