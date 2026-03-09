@@ -10,11 +10,10 @@ with lib;
 
 let
   cfg = config.programs.nixupdater;
-
 in
 {
   options.programs.nixupdater = {
-    enable = mkEnableOption "nixupdater";
+    enable = mkEnableOption "nixupdater configuration";
 
     intervall = mkOption {
       type = types.int;
