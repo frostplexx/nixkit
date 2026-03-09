@@ -179,7 +179,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         refreshItem.target = self
         menu.addItem(refreshItem)
 
-        let updateItem = NSMenuItem(title: "Run \(config.updateCommand)…", action: #selector(openTerminalAndUpdate), keyEquivalent: "u")
+        let updateItem = NSMenuItem(title: "Run Update Command…", action: #selector(openTerminalAndUpdate), keyEquivalent: "u")
         updateItem.target = self
         menu.addItem(updateItem)
 
