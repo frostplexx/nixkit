@@ -1,7 +1,6 @@
 {
   lib,
   stdenv,
-  darwin,
 }:
 
 stdenv.mkDerivation {
@@ -9,10 +8,6 @@ stdenv.mkDerivation {
   version = "1.0.0";
 
   src = ./src;
-
-  buildInputs = with darwin; [
-   apple-sdk_26    # add others as needed, e.g. ServiceManagement, SystemConfiguration, etc.
-  ];
 
   buildPhase = ''
     make
