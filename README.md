@@ -10,6 +10,7 @@ A collection of various nix utilities packaged as Nix flakes with configurable m
 | **ndcli**          | Command line interface for DIM (DNS and IP Management) | Python CLI     |
 | **dimclient**      | Python client for DIM (dependency of ndcli)            | Python package |
 | **defaultbrowser** | Utility to set the default browser on macOS            | C binary       |
+| **nixupdater**     | Small menu bar app that checks flake updates           | Swift App      |
 
 ## 🚀 Installation
 
@@ -79,6 +80,19 @@ nix run github:frostplexx/nixkit#opsops
 ## 🔧 Module Configuration
 
 ### Home Manager Modules
+
+
+### Nix Updater
+
+```nix
+programs.nixupdater = {
+    enable = true;
+    flake = "/path/to/flake"; # Path to your flake
+    command = "update something --command"; # Command that should be run when clicking the item
+    interval = 1800; # Check interval in seconds
+    terminal = "kitty" # Terminal the script is run in
+};
+```
 
 #### Set Default Browser
 
