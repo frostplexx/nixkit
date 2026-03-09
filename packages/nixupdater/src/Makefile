@@ -2,7 +2,7 @@ APP_NAME   = NixUpdater
 BUNDLE     = $(APP_NAME).app
 BIN_DIR    = $(BUNDLE)/Contents/MacOS
 PLIST      = $(BUNDLE)/Contents/Info.plist
-SRC        = src/main.swift
+SRC        = ./main.swift
 BINARY     = $(BIN_DIR)/$(APP_NAME)
 
 .PHONY: all build clean run
