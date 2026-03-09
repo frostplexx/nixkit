@@ -16,7 +16,8 @@ stdenv.mkDerivation {
     make
   '';
 
-  installPhase = ''
+installPhase = ''
+    mkdir -p $out
     cp -r NixUpdater.app $out/NixUpdater.app
   '';
 
