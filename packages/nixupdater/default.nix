@@ -1,6 +1,7 @@
 {
   lib,
   stdenv,
+  swift,
 }:
 
 stdenv.mkDerivation {
@@ -8,6 +9,8 @@ stdenv.mkDerivation {
   version = "1.0.0";
 
   src = ./src;
+
+  nativeBuildInputs = [ swift ];
 
   buildPhase = ''
     make
