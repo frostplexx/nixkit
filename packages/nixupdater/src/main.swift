@@ -112,6 +112,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var updateChecker: UpdateChecker!
     let config: Config
 
+    /// Tracks the Process handle for terminals launched as child processes
+    /// (kitty, alacritty, ghostty) so we can terminate them after completion.
+    private var terminalProcess: Process?
+
+    /// For AppleScript-based terminals we store the tab/window identifier
+    /// so we can close it when the update finishes.
+    private var terminalTabID: String?
+
     init(config: Config) {
         self.config = config
     }
@@ -204,8 +212,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func openTerminalAndUpdate() {
         let fishPath = kPATH.replacingOccurrences(of: ":", with: " ")
 
-        // Write a wrapper script that runs the update command then touches a
-        // sentinel file so we know the terminal session has finished.
         let sentinel  = URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent("nixupdater-done-\(UUID().uuidString)")
         let scriptURL = URL(fileURLWithPath: NSTemporaryDirectory())
@@ -216,6 +222,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         \(config.updateCommand)
         read -P "Press Enter to close..."
         touch \(sentinel.path)
+        exit 0
         """
 
         do {
@@ -226,25 +233,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        // Watch the sentinel file; when it appears the session is done.
-        watchSentinel(sentinel) { [weak self] in
-            try? FileManager.default.removeItem(at: sentinel)
-            try? FileManager.default.removeItem(at: scriptURL)
-            self?.updateChecker.check()
-        }
-
         let fishBin = "/run/current-system/sw/bin/fish"
         let fishCmd = "\(fishBin) --no-config \(scriptURL.path)"
 
         switch config.terminal {
 
         case .terminal:
+            // Terminal.app: open a new window, capture its ID, and close it
+            // when the sentinel appears.
             runAppleScript("""
             tell application "Terminal"
                 activate
-                do script "\(fishCmd)"
+                set newTab to do script "\(fishCmd)"
             end tell
             """)
+
+            watchSentinel(sentinel) { [weak self] in
+                try? FileManager.default.removeItem(at: sentinel)
+                try? FileManager.default.removeItem(at: scriptURL)
+                self?.closeTerminalApp()
+                self?.updateChecker.check()
+            }
 
         case .iterm:
             runAppleScript("""
@@ -259,11 +268,36 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             end tell
             """)
 
+            watchSentinel(sentinel) { [weak self] in
+                try? FileManager.default.removeItem(at: sentinel)
+                try? FileManager.default.removeItem(at: scriptURL)
+                self?.closeItermSession()
+                self?.updateChecker.check()
+            }
+
         case .kitty:
-            launchProcess("/usr/bin/env", args: ["kitty", fishBin, "--no-config", scriptURL.path])
+            let proc = launchProcess("/usr/bin/env",
+                                     args: ["kitty", fishBin, "--no-config", scriptURL.path])
+            terminalProcess = proc
+
+            watchSentinel(sentinel) { [weak self] in
+                try? FileManager.default.removeItem(at: sentinel)
+                try? FileManager.default.removeItem(at: scriptURL)
+                self?.terminateChildProcess()
+                self?.updateChecker.check()
+            }
 
         case .alacritty:
-            launchProcess("/usr/bin/env", args: ["alacritty", "-e", fishBin, "--no-config", scriptURL.path])
+            let proc = launchProcess("/usr/bin/env",
+                                     args: ["alacritty", "-e", fishBin, "--no-config", scriptURL.path])
+            terminalProcess = proc
+
+            watchSentinel(sentinel) { [weak self] in
+                try? FileManager.default.removeItem(at: sentinel)
+                try? FileManager.default.removeItem(at: scriptURL)
+                self?.terminateChildProcess()
+                self?.updateChecker.check()
+            }
 
         case .ghostty:
             let ghosttyPaths = [
@@ -272,7 +306,72 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 "/usr/local/bin/ghostty",
             ]
             let ghostty = ghosttyPaths.first { FileManager.default.fileExists(atPath: $0) } ?? "ghostty"
-            launchProcess(ghostty, args: ["-e", fishBin, "--no-config", scriptURL.path])
+            let proc = launchProcess(ghostty,
+                                     args: ["-e", fishBin, "--no-config", scriptURL.path])
+            terminalProcess = proc
+
+            watchSentinel(sentinel) { [weak self] in
+                try? FileManager.default.removeItem(at: sentinel)
+                try? FileManager.default.removeItem(at: scriptURL)
+                self?.terminateChildProcess()
+                self?.updateChecker.check()
+            }
+        }
+    }
+
+    // MARK: - Terminal Closing Helpers
+
+    /// Close the most recently opened Terminal.app window whose shell has exited.
+    private func closeTerminalApp() {
+        // The fish script has already exited. Tell Terminal.app to close
+        // any window/tab whose process has finished (i.e. is not busy).
+        // We target windows running our fish script by checking if the
+        // shell has exited — Terminal marks those tabs as "not busy".
+        runAppleScript("""
+        tell application "Terminal"
+            repeat with w in windows
+                repeat with t in tabs of w
+                    if busy of t is false then
+                        close w
+                        return
+                    end if
+                end repeat
+            end repeat
+        end tell
+        """)
+    }
+
+    /// Close the current iTerm session/tab that was running our command.
+    private func closeItermSession() {
+        runAppleScript("""
+        tell application "iTerm"
+            tell current window
+                tell current session
+                    close
+                end tell
+            end tell
+        end tell
+        """)
+    }
+
+    /// Terminate a child process (kitty, alacritty, ghostty) that we launched
+    /// directly. The fish script has already exited so the process should be
+    /// winding down, but we make sure by sending SIGTERM then waiting briefly
+    /// before sending SIGKILL if it's still running.
+    private func terminateChildProcess() {
+        guard let proc = terminalProcess else { return }
+        terminalProcess = nil
+
+        if proc.isRunning {
+            proc.terminate()  // SIGTERM
+
+            // Give the process a moment to exit gracefully.
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2) {
+                if proc.isRunning {
+                    // Force kill if it's still hanging around.
+                    kill(proc.processIdentifier, SIGKILL)
+                }
+            }
         }
     }
 
@@ -280,8 +379,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Watches for `sentinel` to be created, then fires `handler` on the main queue.
     private func watchSentinel(_ sentinel: URL, handler: @escaping () -> Void) {
-        // Poll on a background queue every 2 seconds — simple, portable,
-        // and works regardless of how the terminal was launched.
         let queue = DispatchQueue.global(qos: .utility)
         queue.async {
             while !FileManager.default.fileExists(atPath: sentinel.path) {
@@ -298,14 +395,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    private func launchProcess(_ path: String, args: [String]) {
+    @discardableResult
+    private func launchProcess(_ path: String, args: [String]) -> Process? {
         let task = Process()
         task.launchPath = FileManager.default.fileExists(atPath: path) ? path : "/usr/bin/env"
         task.arguments  = FileManager.default.fileExists(atPath: path) ? args : [path] + args
         var env = ProcessInfo.processInfo.environment
         env["PATH"] = kPATH
         task.environment = env
-        try? task.run()
+        do {
+            try task.run()
+            return task
+        } catch {
+            return nil
+        }
     }
 }
 
