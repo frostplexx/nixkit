@@ -55,6 +55,7 @@ in
             "/run/current-system/sw/bin"
             "/etc/profiles/per-user/${config.home.username}/bin"
             "/opt/homebrew/bin"
+            "/nix/var/nix/profiles/default/bin"
             "/usr/local/bin"
             "/usr/bin"
             "/bin"
