@@ -11,6 +11,7 @@ in
 {
   inherit dimclient ndcli;
   defaultbrowser = pkgs.callPackage ./defaultbrowser { };
+  nixupdater = pkgs.callPackage ./nixupdater { };
   opsops = pkgs.callPackage ./opsops { };
   aerospace-swipe = pkgs.callPackage ./aerospace-swipe { };
 }
