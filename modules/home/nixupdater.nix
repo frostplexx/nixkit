@@ -47,7 +47,7 @@ in
   config = mkIf cfg.enable {
     home.packages = lib.optional pkgs.stdenv.isDarwin pkgs.nixupdater;
 
-    launchd.agents.aerospace-swipe = {
+    launchd.agents.nixupdater = {
       enable = true;
       config = {
         ProgramArguments = [
@@ -68,6 +68,11 @@ in
         StandardErrorPath = "/tmp/nixupdater.log";
       };
     };
+
+    home.activation.nixupdater = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      /bin/launchctl stop com.nixupdater 2>/dev/null || true
+      /bin/launchctl start com.nixupdater
+    '';
   };
 
 }
