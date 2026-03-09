@@ -51,7 +51,7 @@ in
       enable = true;
       config = {
         ProgramArguments = [
-          "${pkgs.NixUpdater}/NixUpdater.app/Content/MacOS/NixUpdater"
+          "${pkgs.nixupdater}/NixUpdater.app/Content/MacOS/NixUpdater"
           "--intervall"
           "${toString cfg.intervall}"
           "--flake"
