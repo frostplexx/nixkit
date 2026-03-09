@@ -10,12 +10,9 @@ stdenv.mkDerivation {
 
   src = ./src;
 
-buildInputs = with darwin.apple_sdk.frameworks; [
-  Cocoa
-  Foundation
-  AppKit
-  # add others as needed, e.g. ServiceManagement, SystemConfiguration, etc.
-];
+  buildInputs = with darwin; [
+   apple-sdk_26    # add others as needed, e.g. ServiceManagement, SystemConfiguration, etc.
+  ];
 
   buildPhase = ''
     make
