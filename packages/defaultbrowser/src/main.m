@@ -71,9 +71,10 @@ int main(int argc, const char *argv[]) {
                     set_default_handler(@"http", target_handler);
                     set_default_handler(@"https", target_handler);
                 } else {
-                    printf("%s is not available as an HTTP handler\n", target);
+                    printf("Warning: %s is not available as an HTTP handler\n", target);
 
-                    return 1;
+                    // Return 0 to avoid having nix deployment fail
+                    return 0;
                 }
             }
         }
