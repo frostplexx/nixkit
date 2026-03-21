@@ -3,6 +3,6 @@ _:
 {
   imports = [
     ../shared
-    # Add NixOS-specific modules here if needed
+    ./sunshine-virt-display.nix
   ];
 }
