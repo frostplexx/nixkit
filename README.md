@@ -138,6 +138,20 @@ Source: <https://github.com/ionos-cloud/dim/tree/master/ndcli>
 
 ### System Modules
 
+#### NixOS
+
+##### sunshine-virt-display
+
+Automatically wires `sunshine-virt-display` into `services.sunshine` — appending a "Virtual Desktop" app entry (with icon fetched from Apollo) and configuring the required sudoers rule and kernel module.
+
+```nix
+services.sunshine-virt-display = {
+  enable = true;
+  user = "youruser"; # granted passwordless sudo for the virt_display script
+  # virtual-desktop-icon = null; # set to null to omit the app icon
+};
+```
+
 #### Darwin
 
 ##### Custom Icons
@@ -171,25 +185,6 @@ programs = {
 ```
 
 Source: <https://github.com/frostplexx/opsops>
-
-## 📦 Packages without Modules
-
-### sunshine-virt-display
-
-Virtual display manager for Sunshine game streaming. Creates and manages virtual
-displays on Linux, allowing clients to connect at their native resolution and
-refresh rate.
-
-```nix
-prep-cmd = [
-  {
-    do = ''sh -c "${pkgs.sunshine-virt-display}/bin/virt_display.sh --connect --width ''${SUNSHINE_CLIENT_WIDTH} --height ''${SUNSHINE_CLIENT_HEIGHT} --refresh-rate ''${SUNSHINE_CLIENT_FPS}"'';
-    undo = "${pkgs.sunshine-virt-display}/bin/virt_display.sh --disconnect";
-  }
-];
-```
-
-Source: <https://github.com/frostplexx/sunshine_virt_display>
 
 ## 🔧 Development
 
@@ -252,6 +247,7 @@ nixkit/
 │   │   ├── opsops.nix
 │   │   └── default.nix
 │   ├── nixos/                   # NixOS-specific modules
+│   │   ├── sunshine-virt-display.nix
 │   │   └── default.nix
 │   └── darwin/                  # Darwin-specific modules
 │       └── default.nix
