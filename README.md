@@ -1,16 +1,18 @@
 # nixkit
 
-A collection of various nix utilities packaged as Nix flakes with configurable modules for NixOS, nix-darwin, and Home Manager.
+A collection of various nix utilities packaged as Nix flakes with configurable
+modules for NixOS, nix-darwin, and Home Manager.
 
 ## 📦 Packages
 
-| Package            | Description                                            | Type           |
-| ------------------ | ------------------------------------------------------ | -------------- |
-| **opsops**         | SOPS but easy with 1Password integration               | Rust binary    |
-| **ndcli**          | Command line interface for DIM (DNS and IP Management) | Python CLI     |
-| **dimclient**      | Python client for DIM (dependency of ndcli)            | Python package |
-| **defaultbrowser** | Utility to set the default browser on macOS            | C binary       |
-| **nixupdater**     | Small menu bar app that checks flake updates           | Swift App      |
+| Package                   | Description                                                 | Type           |
+| ------------------------- | ----------------------------------------------------------- | -------------- |
+| **opsops**                | SOPS but easy with 1Password integration                    | Rust binary    |
+| **ndcli**                 | Command line interface for DIM (DNS and IP Management)      | Python CLI     |
+| **dimclient**             | Python client for DIM (dependency of ndcli)                 | Python package |
+| **defaultbrowser**        | Utility to set the default browser on macOS                 | C binary       |
+| **nixupdater**            | Small menu bar app that checks flake updates                | Swift App      |
+| **sunshine-virt-display** | Virtual display manager for Sunshine streaming (Linux only) | Shell/Python   |
 
 ## 🚀 Installation
 
@@ -81,7 +83,6 @@ nix run github:frostplexx/nixkit#opsops
 
 ### Home Manager Modules
 
-
 ### Nix Updater
 
 ```nix
@@ -144,15 +145,15 @@ Source: <https://github.com/ionos-cloud/dim/tree/master/ndcli>
 You can configure custom icons on macOS using the following snippet:
 
 ```nix
- environment.customIcons = {
-    enable = true;
-    icons = [
-      {
-        path = "/Applications/Notion.app";
-        icon = ./icons/notion.icns;
-      }
-    ];
-  };
+environment.customIcons = {
+   enable = true;
+   icons = [
+     {
+       path = "/Applications/Notion.app";
+       icon = ./icons/notion.icns;
+     }
+   ];
+ };
 ```
 
 Source: <https://github.com/ryanccn/nix-darwin-custom-icons>
@@ -164,12 +165,31 @@ Source: <https://github.com/ryanccn/nix-darwin-custom-icons>
 SOPS but easy and with 1Password integration:
 
 ```nix
-  programs = {
-    opsops.enable = true;
-  };
+programs = {
+  opsops.enable = true;
+};
 ```
 
 Source: <https://github.com/frostplexx/opsops>
+
+## 📦 Packages without Modules
+
+### sunshine-virt-display
+
+Virtual display manager for Sunshine game streaming. Creates and manages virtual
+displays on Linux, allowing clients to connect at their native resolution and
+refresh rate.
+
+```nix
+prep-cmd = [
+  {
+    do = ''sh -c "${pkgs.sunshine-virt-display}/bin/virt_display.sh --connect --width ''${SUNSHINE_CLIENT_WIDTH} --height ''${SUNSHINE_CLIENT_HEIGHT} --refresh-rate ''${SUNSHINE_CLIENT_FPS}"'';
+    undo = "${pkgs.sunshine-virt-display}/bin/virt_display.sh --disconnect";
+  }
+];
+```
+
+Source: <https://github.com/frostplexx/sunshine_virt_display>
 
 ## 🔧 Development
 
@@ -193,7 +213,8 @@ nix build .#opsops
 
 ### Updating Packages
 
-This repository uses [nix-update](https://github.com/Mic92/nix-update) for automated package updates:
+This repository uses [nix-update](https://github.com/Mic92/nix-update) for
+automated package updates:
 
 ```bash
 # Update individual packages
@@ -219,7 +240,8 @@ nixkit/
 │   ├── opsops/
 │   ├── ndcli/
 │   ├── dimclient/
-│   └── defaultbrowser/
+│   ├── defaultbrowser/
+│   └── sunshine-virt-display/
 │
 ├── modules/
 │   ├── home/                    # Home Manager modules
@@ -242,7 +264,8 @@ nixkit/
 ## 📋 Requirements
 
 - Nix with flakes enabled
-- For Home Manager modules: [Home Manager](https://github.com/nix-community/home-manager)
+- For Home Manager modules:
+  [Home Manager](https://github.com/nix-community/home-manager)
 - For NixOS modules: NixOS system
 - For Darwin modules: [nix-darwin](https://github.com/LnL7/nix-darwin)
 
@@ -262,7 +285,8 @@ Personal use repository.
 ## 🤝 Contributing
 
 1. Add new packages to `packages/`
-2. Create corresponding modules in `modules/home/`, `modules/shared/`, or platform-specific directories
+2. Create corresponding modules in `modules/home/`, `modules/shared/`, or
+   platform-specific directories
 3. Update `packages/default.nix` and `flake.nix`
 4. Test with `nix build .#package-name`
 5. Verify `nix-update package-name` works for automated updates

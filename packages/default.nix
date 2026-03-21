@@ -14,4 +14,5 @@ in
   nixupdater = pkgs.callPackage ./nixupdater { };
   opsops = pkgs.callPackage ./opsops { };
   aerospace-swipe = pkgs.callPackage ./aerospace-swipe { };
+  sunshine-virt-display = pkgs.callPackage ./sunshine-virt-display { };
 }
