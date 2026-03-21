@@ -18,30 +18,11 @@
     in
     {
       packages = forAllSystems (
-        system:
-        let
-          pkgsWithOverlay = import nixpkgs {
-            inherit system;
-            overlays = [ self.overlays.default ];
-          };
-        in
-        {
-          inherit (pkgsWithOverlay)
-            defaultbrowser
-            dimclient
-            ndcli
-            opsops
-            ;
-        }
+        system: import ./packages { pkgs = nixpkgs.legacyPackages.${system}; }
       );
 
       # Overlay for easy integration
       overlays.default = import ./overlay.nix;
-
-      # Legacy packages support (for nix-update compatibility)
-      legacyPackages = forAllSystems (
-        system: import ./packages { pkgs = nixpkgs.legacyPackages.${system}; }
-      );
 
       # Module outputs
       homeModules.default = import ./modules/home;
