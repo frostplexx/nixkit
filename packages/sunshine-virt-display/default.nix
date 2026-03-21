@@ -14,7 +14,7 @@ stdenv.mkDerivation {
   src = fetchFromGitHub {
     owner = "frostplexx";
     repo = "sunshine_virt_display";
-    rev = "5fa8c763fab3e0bdbcc433f8897a7a842fdc15d5";
+    rev = "v1.1.0";
     sha256 = "17sjk8f4xhdgmsanr3pkb865v60v042lwsdwh5ghrigzdiddgbcv";
   };
 
