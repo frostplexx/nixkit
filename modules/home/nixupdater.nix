@@ -19,7 +19,7 @@ in
       type = types.int;
       default = 1800;
       example = "300";
-      description = "Set the intervall in seconds for checking for updates";
+      description = "Set the interval in seconds for checking for updates";
     };
 
     flake = mkOption {
@@ -37,10 +37,32 @@ in
     };
 
     terminal = mkOption {
-      type = types.str;
+      type = types.enum [
+        "terminal"
+        "iterm"
+        "kitty"
+        "kitty-tab"
+        "kitty-overlay"
+        "alacritty"
+        "ghostty"
+      ];
       default = "kitty";
-      example = "alacritty";
-      description = "Terminal to use for running the command. Only used if command is set and not empty";
+      example = "kitty-overlay";
+      description = ''
+        Terminal to use for running the update command. Options:
+          terminal        macOS Terminal.app
+          iterm           iTerm2
+          kitty           new kitty window (default)
+          kitty-tab       new tab in the running kitty instance *
+          kitty-overlay   overlay in the focused kitty window *
+          alacritty
+          ghostty
+
+        * kitty-tab and kitty-overlay use kitty's remote-control protocol
+          (kitty @ new-window). They require `allow_remote_control yes` in
+          kitty.conf, or kitty launched with --listen-on / KITTY_LISTEN_ON.
+          Falls back to a new kitty window when no running instance is found.
+      '';
     };
   };
 
@@ -62,7 +84,6 @@ in
             "/usr/sbin"
             "/sbin"
           ];
-          # NH_FLAKE = cfg.flake;
         };
         ProgramArguments = [
           "${pkgs.nixupdater}/NixUpdater.app/Contents/MacOS/NixUpdater"
