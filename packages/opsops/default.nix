@@ -9,16 +9,16 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "opsops";
-  version = "1.3.4";
+  version = "1.3.5";
 
   src = fetchFromGitHub {
     owner = "frostplexx";
     repo = "opsops";
     rev = "v${version}";
-    sha256 = "sha256-gfoc9EHpVFdKA4uH0w3Chy1p3uI6TIu1H5J6E6BxXz8=";
+    sha256 = "sha256-sCd1DeNO//d1LnzB8FOeNAIrHRYy5lxHZ5G6PYVE9ig=";
   };
 
-  cargoHash = "sha256-V6ZmJnz43QeP4fNkT8SW2w4jysPpyOV3algQWnJeLeU=";
+  cargoHash = "sha256-dw2WmGNZ4vFaOES13Yfg9OSJu0HO0qSZ52P177ZKEk0=";
 
   nativeBuildInputs = [
     pkg-config
