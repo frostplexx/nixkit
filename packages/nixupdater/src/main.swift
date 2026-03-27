@@ -439,7 +439,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         for dir in searchDirs {
             guard let entries = try? FileManager.default.contentsOfDirectory(atPath: dir) else { continue }
-            for entry in entries where entry.hasPrefix("kitty-") {
+            for entry in entries where entry.hasPrefix("mykitty-") {
                 let full = (dir as NSString).appendingPathComponent(entry)
                 // lstat to inspect the file without following a potential symlink.
                 var st = stat()
