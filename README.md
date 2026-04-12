@@ -3,6 +3,8 @@
 A collection of various nix utilities packaged as Nix flakes with configurable
 modules for NixOS, nix-darwin, and Home Manager.
 
+**[View Documentation](https://frostplexx.github.io/nixkit/)**
+
 ## 📦 Packages
 
 | Package                   | Description                                                 | Type           |
@@ -257,14 +259,6 @@ nixkit/
 ├── default.nix                  # Legacy Nix compatibility
 └── update.sh                    # Package update script
 ```
-
-## 📋 Requirements
-
-- Nix with flakes enabled
-- For Home Manager modules:
-  [Home Manager](https://github.com/nix-community/home-manager)
-- For NixOS modules: NixOS system
-- For Darwin modules: [nix-darwin](https://github.com/LnL7/nix-darwin)
 
 ## 🤖 Automated Updates
 

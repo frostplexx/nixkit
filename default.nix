@@ -1,5 +1,5 @@
-{
-  pkgs ? import <nixpkgs> { },
-}:
-
-import ./packages { inherit pkgs; }
+{...} @ args:
+import ./packages {
+  pkgs = args.pkgs or (import <nixpkgs> {});
+  system = args.system;
+}

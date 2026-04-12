@@ -1,0 +1,6 @@
+[
+  ./darwin
+  ./nixos
+  ./home
+  ./shared
+]
