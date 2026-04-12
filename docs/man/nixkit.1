@@ -1,0 +1,36 @@
+.Dd January 1, 1980
+.Dt nixkit 1
+.Os Nixkit
+.\" disable hyphenation
+.hy
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" enable line breaks after slashes
+.cflags 4 /
+.Sh NAME
+.Nm nixkit
+.Nd nixkit package management
+.
+.
+.
+.Sh SYNOPSIS
+.Nm nixkit
+.Op Fl -version
+.Op Fl -help
+.Op Fl -dump-state Ar path
+.Sh DESCRIPTION
+.Nm nixkit
+provides various internal modules and packages for NixOS and nix-darwin.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl v , Fl -version
+Print the version of nixkit.
+.It Fl h , Fl -help
+Show help information.
+.It Fl d , Fl -dump-state Ar path
+Dump the state to the specified path.
+.El
+.Sh SEE ALSO
+.Br nixkit (5)
+.Sh BUGS
+Report bugs to https://github.com/frostplexx/nixkit/issues

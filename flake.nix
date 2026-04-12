@@ -21,14 +21,25 @@
       system: let
         pkgs = nixpkgs.legacyPackages.${system};
         allPkgs = import ./packages {inherit pkgs;};
+        docPkgs = import ./docs/default.nix {
+          inherit pkgs;
+          lib = pkgs.lib;
+        };
+        pkgSet =
+          pkgs.lib.filterAttrs (
+            _: p:
+              pkgs.lib.isDerivation p
+              && pkgs.lib.meta.availableOn pkgs.stdenv.hostPlatform p
+              && !(p.meta.unsupported or false)
+          )
+          allPkgs;
       in
-        pkgs.lib.filterAttrs (
-          _: p:
-            pkgs.lib.isDerivation p
-            && pkgs.lib.meta.availableOn pkgs.stdenv.hostPlatform p
-            && !(p.meta.unsupported or false)
-        )
-        allPkgs
+        pkgSet
+        // {
+          nixkit-docs-json = docPkgs.options.json;
+          nixkit-docs-html = docPkgs.html;
+          nixkit-docs-man = docPkgs.manPages;
+        }
     );
 
     # Overlay for easy integration

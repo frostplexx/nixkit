@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nixkit Documentation</title>
+  <style>
+    :root {
+      --primary: #527ee2;
+      --bg: #ffffff;
+      --text: #1f2937;
+      --border: #e5e7eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #60a5fa;
+        --bg: #111827;
+        --text: #f9fafb;
+        --border: #374151;
+      }
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    h1 { color: var(--primary); font-weight: 300; }
+    h2 { border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+    a { color: var(--primary); }
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Nixkit Documentation</h1>
+  <p>Nixkit provides various internal modules and packages for NixOS and nix-darwin.</p>
+  
+  <div class="card">
+    <h2>Options Reference</h2>
+    <p>View all available configuration options:</p>
+    <ul>
+      <li><a href="options/options.json">Options JSON</a></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Manual Pages</h2>
+    <ul>
+      <li><a href="man/nixkit.1">nixkit(1)</a></li>
+    </ul>
+  </div>
+
+  <footer style="margin-top: 2rem; font-size: 0.875rem; color: #6b7280;">
+    <p>Built with <a href="https://nixos.org">Nix</a></p>
+  </footer>
+</body>
+</html>
