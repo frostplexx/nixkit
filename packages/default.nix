@@ -15,4 +15,5 @@ in
   opsops = pkgs.callPackage ./opsops { };
   aerospace-swipe = pkgs.callPackage ./aerospace-swipe { };
   sunshine-virt-display = pkgs.callPackage ./sunshine-virt-display { };
+  skhd_zig = pkgs.callPackage ./skhd_zig { };
 }

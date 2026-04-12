@@ -8,13 +8,13 @@
 stdenv.mkDerivation {
 
     pname = "aerospace-swipe";
-    version = "1.0.0";
+    version = "0-unstable-2025-11-17";
 
     src = fetchFromGitHub {
       owner = "acsandmann";
       repo = "aerospace-swipe";
       hash = "sha256-ZLaE/CuUgpWXrmV0cKLI8L9R92REECxWcpOwofMDMx4=";
-      rev =  "1845e0e99c4c4bb34453253189a437a698ddbdc8";
+      rev =  "976c3107f6ed9859149bdc130e3f8928f2ab6852";
     };
 
     postPatch = ''

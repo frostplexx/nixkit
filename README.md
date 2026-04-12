@@ -13,6 +13,7 @@ modules for NixOS, nix-darwin, and Home Manager.
 | **defaultbrowser**        | Utility to set the default browser on macOS                 | C binary       |
 | **nixupdater**            | Small menu bar app that checks flake updates                | Swift App      |
 | **sunshine-virt-display** | Virtual display manager for Sunshine streaming (Linux only) | Shell/Python   |
+| **skhd.zig** | Simple Hotkey Daemon for macOS, ported from skhd by koekeishiya   |  Zig |
 
 ## 🚀 Installation
 
