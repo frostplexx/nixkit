@@ -236,6 +236,8 @@ def update_package(package: str, create_pr: bool = False) -> UpdateResult:
             UpdateStatus.SKIPPED,
             error="No version attribute (generated/doc package)",
         )
+    elif "hash mismatch" in output:
+        error = "Hash mismatch for rev, update hash manually"
     elif "error" in output.lower() and "eval" in output.lower():
         error = "Nix evaluation error (complex versioning/dependencies)"
     else:
@@ -363,7 +365,8 @@ def print_summary(results: list[UpdateResult]):
 def main():
     parser = argparse.ArgumentParser(description="Update nixkit packages")
     parser.add_argument(
-        "-p", "--package",
+        "-p",
+        "--package",
         metavar="PKG",
         action="append",
         dest="packages",
