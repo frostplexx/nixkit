@@ -80,7 +80,23 @@
             in "| ${name} | ${desc} | ${platStr} |"
           ) (pkgs.lib.filterAttrs (n: p: pkgs.lib.isDerivation p && p ? meta && p.meta ? description) nixkitPackages)));
 
-        optionsDoc = pkgs.buildPackages.nixosOptionsDoc {options = allOptions;};
+        optionsDoc = pkgs.buildPackages.nixosOptionsDoc {
+          options = allOptions;
+          transformOptions = opt:
+            opt
+            // {
+              declarations = map (decl:
+                if pkgs.lib.hasPrefix (toString ./.) (toString decl)
+                then let
+                  relative = pkgs.lib.removePrefix (toString ./. + "/") (toString decl);
+                in {
+                  url = "https://github.com/frostplexx/nixkit/blob/main/${relative}";
+                  name = relative;
+                }
+                else decl)
+              opt.declarations;
+            };
+        };
 
         optionsJSON =
           pkgs.runCommand "options.json" {
