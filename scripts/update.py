@@ -4,6 +4,7 @@ Unified package update script for nixkit.
 Automatically updates packages and optionally creates PRs in CI.
 """
 
+import argparse
 import json
 import os
 import re
@@ -360,6 +361,16 @@ def print_summary(results: list[UpdateResult]):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Update nixkit packages")
+    parser.add_argument(
+        "-p", "--package",
+        metavar="PKG",
+        action="append",
+        dest="packages",
+        help="Only update this package (can be specified multiple times)",
+    )
+    args = parser.parse_args()
+
     # Check if in git repo
     git_check_exit_code, _ = run_command(["git", "rev-parse", "--git-dir"])
     if git_check_exit_code != 0:
@@ -381,8 +392,16 @@ def main():
                 log("info", "Aborted by user.")
                 sys.exit(0)
 
-    # Get packages
-    packages = get_packages()
+    # Get packages (filtered if -p was given)
+    all_packages = get_packages()
+    if args.packages:
+        unknown = set(args.packages) - set(all_packages)
+        if unknown:
+            log("error", f"Unknown package(s): {' '.join(sorted(unknown))}")
+            sys.exit(1)
+        packages = args.packages
+    else:
+        packages = all_packages
     print()
 
     results = []
