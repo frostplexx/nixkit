@@ -8,11 +8,15 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
+
+EXCLUDED_PACKAGES = ["manpages", "manualHTML", "optionsJSON", "website"]
 
 
 class Color:
@@ -49,19 +53,28 @@ def log(level: str, message: str):
 
 
 def run_command(
-    cmd: list[str], timeout: int = 600, capture: bool = True, json_output: bool = False
+    cmd: list[str],
+    timeout: int = 600,
+    capture: bool = True,
+    json_output: bool = False,
+    cwd: Optional[str] = None,
 ) -> tuple[int, str]:
     """Run a command and return (exit_code, output)"""
     try:
         if capture:
             result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=timeout, check=False
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                check=False,
+                cwd=cwd,
             )
             # For JSON output, only return stdout to avoid parsing warnings
             output = result.stdout if json_output else result.stdout + result.stderr
             return result.returncode, output
         else:
-            result = subprocess.run(cmd, timeout=timeout, check=False)
+            result = subprocess.run(cmd, timeout=timeout, check=False, cwd=cwd)
             return result.returncode, ""
     except subprocess.TimeoutExpired:
         return 124, "Command timed out"
@@ -108,72 +121,93 @@ def get_packages() -> list[str]:
     return packages
 
 
-EXCLUDED_PACKAGES = ["manpages", "manualHTML", "optionsJSON", "website"]
-
-
-def update_package(package: str, create_pr: bool = False) -> UpdateResult:
+def update_package(
+    package: str, create_pr: bool = False, dry_run: bool = False
+) -> UpdateResult:
     """Update a single package"""
     if package in EXCLUDED_PACKAGES:
         return UpdateResult(
             package, UpdateStatus.SKIPPED, error="Excluded (generated package)"
         )
 
-    log("info", f"Checking {package} for updates...")
+    log(
+        "info", f"Checking {package} for updates..." + (" (dry run)" if dry_run else "")
+    )
 
-    # If creating PR, manage git branches
-    branch_name = f"update/{package}"
-    if create_pr:
-        # Ensure on main
-        run_command(["git", "checkout", "main", "-q"], capture=True)
-        # Delete old branch if exists
-        run_command(["git", "branch", "-D", branch_name], capture=True)
-        # Create new branch
-        git_exit_code, _ = run_command(
-            ["git", "checkout", "-b", branch_name, "-q"], capture=True
-        )
-        if git_exit_code != 0:
-            return UpdateResult(
-                package, UpdateStatus.FAILED, error="Failed to create branch"
+    # In dry-run mode, copy the repo to a temp directory so nix-update runs
+    # on an exact snapshot of the current working tree (including uncommitted
+    # changes) without touching anything in the real repo.
+    run_cwd = None
+    tmp_copy = None
+    if dry_run:
+        tmp_copy = tempfile.mkdtemp(prefix="nixkit-dryrun-")
+        shutil.copytree(".", tmp_copy, symlinks=True, dirs_exist_ok=True)
+        run_cwd = tmp_copy
+
+    try:
+        # If creating PR, manage git branches
+        branch_name = f"update/{package}"
+        if create_pr:
+            # Ensure on main
+            run_command(["git", "checkout", "main", "-q"], capture=True)
+            # Delete old branch if exists
+            run_command(["git", "branch", "-D", branch_name], capture=True)
+            # Create new branch
+            git_exit_code, _ = run_command(
+                ["git", "checkout", "-b", branch_name, "-q"], capture=True
+            )
+            if git_exit_code != 0:
+                return UpdateResult(
+                    package, UpdateStatus.FAILED, error="Failed to create branch"
+                )
+
+        # Try normal version update first (works for most packages)
+        cmd = [
+            "nix-update",
+            package,
+            "--flake",
+            "--build",
+            "--version-regex",
+            r".*?(\d+\.\d+\.\d+)$",
+        ]
+        if not dry_run:
+            cmd.append("--commit")
+
+        update_exit_code, output = run_command(cmd, timeout=600, cwd=run_cwd)
+
+        # If it fails with version error and mentions GitHub, try branch mode
+        if update_exit_code != 0 and "Please specify the version" in output:
+            log("info", f"{package} appears to be unstable, trying branch mode...")
+
+            # Get homepage for --url flag
+            system = get_current_system()
+            homepage_exit_code, homepage = run_command(
+                [
+                    "nix",
+                    "eval",
+                    "--raw",
+                    f".#packages.{system}.{package}.meta.homepage",
+                ],
+                json_output=True,  # stdout only — avoids nix warnings in stderr corrupting the URL
             )
 
-    # Try normal version update first (works for most packages)
-    cmd = [
-        "nix-update",
-        package,
-        "--flake",
-        "--build",
-        "--commit",
-        "--version-regex",
-        r".*?(\d+\.\d+\.\d+)$",
-    ]
+            if homepage_exit_code == 0 and homepage.strip():
+                cmd = [
+                    "nix-update",
+                    package,
+                    "--flake",
+                    "--build",
+                    "--version=branch",
+                    "--url",
+                    homepage.strip(),
+                ]
+                if not dry_run:
+                    cmd.append("--commit")
+                update_exit_code, output = run_command(cmd, timeout=600, cwd=run_cwd)
 
-    update_exit_code, output = run_command(cmd, timeout=600)
-
-    # If it fails with version error and mentions GitHub, try branch mode
-    if update_exit_code != 0 and "Please specify the version" in output:
-        log("info", f"{package} appears to be unstable, trying branch mode...")
-
-        # Get homepage for --url flag
-        system = get_current_system()
-        homepage_exit_code, homepage = run_command(
-            ["nix", "eval", "--raw", f".#packages.{system}.{package}.meta.homepage"]
-        )
-
-        if homepage_exit_code == 0 and homepage.strip():
-            cmd = [
-                "nix-update",
-                package,
-                "--flake",
-                "--build",
-                "--commit",
-                "--version=branch",
-                "--url",
-                homepage.strip(),
-            ]
-            update_exit_code, output = run_command(cmd, timeout=600)
-        else:
-            # No homepage, can't use branch mode
-            pass
+    finally:
+        if tmp_copy:
+            shutil.rmtree(tmp_copy, ignore_errors=True)
 
     # Parse result
     if update_exit_code == 0:
@@ -241,9 +275,7 @@ def update_package(package: str, create_pr: bool = False) -> UpdateResult:
     elif "error" in output.lower() and "eval" in output.lower():
         error = "Nix evaluation error (complex versioning/dependencies)"
     else:
-        # Get first few lines of error
-        error_lines = output.split("\n")[:3]
-        error = "\n".join(error_lines)
+        error = output.strip()
 
     if create_pr:
         cleanup_branch(package, branch_name, up_to_date=False)
@@ -372,6 +404,13 @@ def main():
         dest="packages",
         help="Only update this package (can be specified multiple times)",
     )
+    parser.add_argument(
+        "-d",
+        "--dry-run",
+        action="store_true",
+        dest="dry_run",
+        help="Check for updates and build in an isolated worktree, without modifying the working tree",
+    )
     args = parser.parse_args()
 
     # Check if in git repo
@@ -381,9 +420,9 @@ def main():
         sys.exit(1)
 
     # Determine if we're in CI (should create PRs)
-    create_prs = bool(os.getenv("CI"))
+    create_prs = bool(os.getenv("CI")) and not args.dry_run
 
-    if not create_prs:
+    if not create_prs and not args.dry_run:
         # Check for uncommitted changes
         git_status_exit_code, _ = run_command(
             ["git", "diff-index", "--quiet", "HEAD", "--"]
@@ -409,7 +448,7 @@ def main():
 
     results = []
     for package in packages:
-        result = update_package(package, create_pr=create_prs)
+        result = update_package(package, create_pr=create_prs, dry_run=args.dry_run)
 
         # Log result
         if result.status == UpdateStatus.SUCCESS:
