@@ -107,8 +107,16 @@ def get_packages() -> list[str]:
     return packages
 
 
+EXCLUDED_PACKAGES = ["manpages", "manualHTML", "optionsJSON", "website"]
+
+
 def update_package(package: str, create_pr: bool = False) -> UpdateResult:
     """Update a single package"""
+    if package in EXCLUDED_PACKAGES:
+        return UpdateResult(
+            package, UpdateStatus.SKIPPED, error="Excluded (generated package)"
+        )
+
     log("info", f"Checking {package} for updates...")
 
     # If creating PR, manage git branches
@@ -218,6 +226,14 @@ def update_package(package: str, create_pr: bool = False) -> UpdateResult:
             cleanup_branch(package, branch_name, up_to_date=True)
         return UpdateResult(
             package, UpdateStatus.SKIPPED, error="No URL in src (local source)"
+        )
+    elif "expected a set but found null" in output:
+        if create_pr:
+            cleanup_branch(package, branch_name, up_to_date=True)
+        return UpdateResult(
+            package,
+            UpdateStatus.SKIPPED,
+            error="No version attribute (generated/doc package)",
         )
     elif "error" in output.lower() and "eval" in output.lower():
         error = "Nix evaluation error (complex versioning/dependencies)"
