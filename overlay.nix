@@ -1,17 +1,14 @@
-final: prev: let
+_: prev: let
   packages = import ./packages {
-    pkgs = final;
-    system = final.stdenv.hostPlatform.system;
+    pkgs = prev;
+    inherit (prev.stdenv.hostPlatform) system;
   };
 in
-  # Make packages available at top level
   packages
   // {
-    # Also make Python packages available in python packages for easier access
     python3 = prev.python3.override {
-      packageOverrides = pyfinal: pyprev: {
+      packageOverrides = _pyfinal: _pyprev: {
         inherit (packages) dimclient ndcli;
       };
     };
-    python3Packages = final.python3.pkgs;
   }
