@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   dry-run:
-    runs-on: macos-15
+    runs-on: macos-latest
 
     steps:
       - name: Checkout repository
