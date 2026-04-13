@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    paths:
+      - ".github/workflows/daily-package-updates.yml"
   schedule:
     - cron: "0 6 * * *"
   workflow_dispatch:
@@ -14,43 +17,33 @@ permissions:
   contents: write
   pull-requests: write
 
-.step-checkout: &step-checkout
-  name: Checkout repository
-  uses: actions/checkout@v6
-  with:
-    token: ${{ secrets.GITHUB_TOKEN }}
-    fetch-depth: 0
-
-.step-install-nix: &step-install-nix
-  name: Install Nix
-  uses: DeterminateSystems/nix-installer-action@v22
-
-.step-magic-cache: &step-magic-cache
-  name: Setup Nix Magic Cache
-  uses: DeterminateSystems/magic-nix-cache-action@v13
-
-.step-install-deps: &step-install-deps
-  name: Install dependencies
-  run: |
-    nix profile add nixpkgs#nix-update
-    nix profile add nixpkgs#python3
-    nix profile add nixpkgs#gh
-
-.step-configure-git: &step-configure-git
-  name: Configure Git
-  run: |
-    git config --global user.name "github-actions[bot]"
-    git config --globallatest user.email "github-actions[bot]@users.noreply.github.com"
-
 jobs:
   update-packages:
     runs-on: macos-latest
     steps:
-      - *step-checkout
-      - *step-install-nix
-      - *step-magic-cache
-      - *step-install-deps
-      - *step-configure-git
+      - &step-checkout
+        name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+      - &step-install-nix
+        name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v22
+      - &step-magic-cache
+        name: Setup Nix Magic Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v13
+      - &step-install-deps
+        name: Install dependencies
+        run: |
+          nix profile add nixpkgs#nix-update
+          nix profile add nixpkgs#python3
+          nix profile add nixpkgs#gh
+      - &step-configure-git
+        name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
       - name: Run package updates
         run: ./scripts/update.py
         env:
