@@ -26,6 +26,7 @@
       if isLinux
       then {
         sunshine-virt-display = pkgs.callPackage ./sunshine-virt-display {};
+        opsops = pkgs.callPackage ./opsops {};
       }
       else {}
     );
