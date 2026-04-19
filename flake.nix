@@ -114,6 +114,7 @@
           substitute ${./docs/manual/manual.md} $out/manual.md \
             --replace-fail '@NIXKIT_VERSION@' "${nixkitVersion.release}" \
             --replace-fail '@NIXKIT_OPTIONS_JSON@' ${optionsJSON}/share/doc/nixkit/options.json
+          cp ${./docs/manual/known-issues.md} $out/known-issues.md
         '';
 
         manualHTML = let

@@ -6,3 +6,7 @@ id-prefix: opt-
 list-id: configuration-variable-list
 source: @NIXKIT_OPTIONS_JSON@
 ```
+
+```{=include=} sections
+known-issues.md
+```
