@@ -10,6 +10,7 @@
 
   packages =
     {
+      prometheus-mcp-server = pkgs.callPackage ./prometheus-mcp-server {};
     }
     // (
       if isDarwin
