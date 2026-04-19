@@ -7,6 +7,8 @@
 
   dimclient = pkgs.callPackage ./dimclient {};
   ndcli = pkgs.callPackage ./ndcli {inherit dimclient;};
+  prlspPkgs = pkgs.callPackage ./prlsp {};
+  inherit (prlspPkgs) prlsp prlsp-nvim;
 
   packages =
     {
@@ -31,4 +33,4 @@
       else {}
     );
 in
-  packages // {inherit dimclient ndcli;}
+  packages // {inherit dimclient ndcli prlsp prlsp-nvim;}
