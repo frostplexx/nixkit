@@ -9,9 +9,62 @@ permissions:
   contents: read
 
 jobs:
-  dry-run:
-    runs-on: macos-latest
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.detect.outputs.matrix }}
+      has_packages: ${{ steps.detect.outputs.has_packages }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
+      - name: Detect changed packages and platforms
+        id: detect
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+        run: |
+          python3 << 'EOF'
+          import json, os, re, subprocess
+
+          diff = subprocess.check_output(
+              ['git', 'diff', '--name-only', f'origin/{os.environ["GITHUB_BASE_REF"]}...HEAD']
+          ).decode()
+
+          macos_pkgs, linux_pkgs = [], []
+          for line in diff.splitlines():
+              m = re.match(r'^packages/([^/]+)/default\.nix$', line)
+              if not m:
+                  continue
+              pkg = m.group(1)
+              try:
+                  content = open(f'packages/{pkg}/default.nix').read()
+              except FileNotFoundError:
+                  continue
+              # lib.platforms.linux without darwin/unix → Linux-only
+              if re.search(r'platforms\.linux', content) and not re.search(r'platforms\.(darwin|unix)', content):
+                  linux_pkgs.append(pkg)
+              else:
+                  macos_pkgs.append(pkg)
+
+          matrix = {"include": []}
+          if macos_pkgs:
+              matrix["include"].append({"runner": "macos-latest", "packages": " ".join(macos_pkgs)})
+          if linux_pkgs:
+              matrix["include"].append({"runner": "ubuntu-latest", "packages": " ".join(linux_pkgs)})
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"matrix={json.dumps(matrix)}\n")
+              f.write(f"has_packages={'true' if matrix['include'] else 'false'}\n")
+          EOF
+
+  dry-run:
+    needs: detect
+    if: needs.detect.outputs.has_packages == 'true'
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -29,20 +82,8 @@ jobs:
           nix profile add nixpkgs#nix-update
           nix profile add nixpkgs#python3
 
-      - name: Detect changed packages
-        id: packages
-        run: |
-          pkgs=$(git diff --name-only origin/${{ github.base_ref }}...HEAD \
-            | grep '^packages/.*/default\.nix$' \
-            | sed 's|packages/\([^/]*\)/default\.nix|\1|' \
-            | tr '\n' ' ' \
-            | xargs)
-          echo "list=$pkgs" >> "$GITHUB_OUTPUT"
-          echo "Changed packages: $pkgs"
-
       - name: Dry-run update check
-        if: steps.packages.outputs.list != ''
         run: |
-          for pkg in ${{ steps.packages.outputs.list }}; do
+          for pkg in ${{ matrix.packages }}; do
             ./scripts/update.py -p "$pkg" --dry-run
           done

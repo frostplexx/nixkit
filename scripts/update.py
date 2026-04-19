@@ -93,13 +93,8 @@ def get_current_system() -> str:
     return system.strip()
 
 
-def get_packages() -> list[str]:
-    """Get all packages from the flake"""
-    log("info", "Discovering packages...")
-
-    system = get_current_system()
-
-    # Get packages - use json_output=True to avoid warnings in output
+def _query_packages_for_system(system: str) -> list[str]:
+    """Get package names for a given Nix system"""
     exit_code, output = run_command(
         [
             "nix",
@@ -111,12 +106,31 @@ def get_packages() -> list[str]:
         ],
         json_output=True,
     )
-
     if exit_code != 0:
+        return []
+    return json.loads(output)
+
+
+def get_packages(exclude_system: Optional[str] = None) -> list[str]:
+    """Get all packages from the flake, optionally excluding those available on another system"""
+    log("info", "Discovering packages...")
+
+    system = get_current_system()
+
+    packages = _query_packages_for_system(system)
+    if not packages:
         log("error", "Failed to get packages from flake")
         sys.exit(1)
 
-    packages = json.loads(output)
+    if exclude_system:
+        excluded = set(_query_packages_for_system(exclude_system))
+        if not excluded:
+            log("warning", f"Could not query packages for {exclude_system}, skipping exclusion")
+        else:
+            before = len(packages)
+            packages = [p for p in packages if p not in excluded]
+            log("info", f"Excluded {before - len(packages)} package(s) also available on {exclude_system}")
+
     log("info", f"Found packages: {' '.join(packages)}")
     return packages
 
@@ -411,6 +425,12 @@ def main():
         dest="dry_run",
         help="Check for updates and build in an isolated worktree, without modifying the working tree",
     )
+    parser.add_argument(
+        "--exclude-system",
+        metavar="SYSTEM",
+        dest="exclude_system",
+        help="Skip packages that are also available on SYSTEM (e.g. aarch64-darwin). Useful to avoid duplicate work when running on multiple platforms.",
+    )
     args = parser.parse_args()
 
     # Check if in git repo
@@ -435,13 +455,15 @@ def main():
                 sys.exit(0)
 
     # Get packages (filtered if -p was given)
-    all_packages = get_packages()
+    all_packages = get_packages(exclude_system=args.exclude_system)
     if args.packages:
-        unknown = set(args.packages) - set(all_packages)
-        if unknown:
-            log("error", f"Unknown package(s): {' '.join(sorted(unknown))}")
-            sys.exit(1)
-        packages = args.packages
+        unavailable = set(args.packages) - set(all_packages)
+        if unavailable:
+            log("warning", f"Skipping package(s) not available on this system: {' '.join(sorted(unavailable))}")
+        packages = [p for p in args.packages if p in set(all_packages)]
+        if not packages:
+            log("info", "No packages to update on this system.")
+            sys.exit(0)
     else:
         packages = all_packages
     print()

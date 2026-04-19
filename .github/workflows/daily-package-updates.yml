@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    paths:
+      - ".github/workflows/daily-package-updates.yml"
   schedule:
     - cron: "0 6 * * *"
   workflow_dispatch:
@@ -17,32 +20,44 @@ permissions:
 jobs:
   update-packages:
     runs-on: macos-latest
-
     steps:
-      - name: Checkout repository
+      - &step-checkout
+        name: Checkout repository
         uses: actions/checkout@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-
-      - name: Install Nix
+      - &step-install-nix
+        name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v22
-
-      - name: Setup Nix Magic Cache
+      - &step-magic-cache
+        name: Setup Nix Magic Cache
         uses: DeterminateSystems/magic-nix-cache-action@v13
-
-      - name: Install dependencies
+      - &step-install-deps
+        name: Install dependencies
         run: |
           nix profile add nixpkgs#nix-update
           nix profile add nixpkgs#python3
           nix profile add nixpkgs#gh
-
-      - name: Configure Git
+      - &step-configure-git
+        name: Configure Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
       - name: Run package updates
         run: ./scripts/update.py
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update-linux-only-packages:
+    runs-on: ubuntu-latest
+    steps:
+      - *step-checkout
+      - *step-install-nix
+      - *step-magic-cache
+      - *step-install-deps
+      - *step-configure-git
+      - name: Run package updates (Linux-only packages)
+        run: ./scripts/update.py --exclude-system aarch64-darwin
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
