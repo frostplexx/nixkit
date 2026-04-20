@@ -5,13 +5,14 @@
   fetchFromGitHub,
   nix-update-script,
 }: let
+  rev = "c9a3a7daf2d5b9a7cefc5d8f9044ac7bf29f82fb";
   src = fetchFromGitHub {
     owner = "toziegler";
     repo = "prlsp";
-    rev = "v${version}";
-    hash = "sha256-DzyEWnLXN1HOVVRv1h5blnQnnEcAY17O+LBUYKzTx+E=";
+    inherit rev;
+    hash = "sha256-30XSTyGH4z9jeLfFQsyOMYVs8n0ewG2Gzwvrhm9dzgQ=";
   };
-  version = "0.1.0";
+  version = "0.1.0-unstable-2026-03-09";
 in {
   # The Go LSP server binary
   prlsp = buildGoModule {
@@ -22,7 +23,7 @@ in {
       substituteInPlace go.mod --replace-fail 'go 1.25.7' 'go 1.24'
     '';
     vendorHash = null;
-    passthru.updateScript = nix-update-script {};
+    passthru.updateScript = nix-update-script {extraArgs = ["--version=branch"];};
 
     meta = with lib; {
       description = "LSP server that surfaces GitHub PR review comments as editor diagnostics";
