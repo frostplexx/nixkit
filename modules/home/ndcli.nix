@@ -4,13 +4,9 @@
   pkgs,
   ...
 }:
-
-with lib;
-
-let
+with lib; let
   cfg = config.programs.ndcli;
-in
-{
+in {
   options.programs.ndcli = {
     enable = mkEnableOption "ndcli command line tool";
 
@@ -28,7 +24,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = [ pkgs.ndcli ];
+    home.packages = [pkgs.ndcli];
 
     home.file.".ndclirc".text = ''
       server = ${cfg.server}

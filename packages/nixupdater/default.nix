@@ -3,20 +3,19 @@
   stdenv,
   swift,
 }:
-
 stdenv.mkDerivation {
   pname = "nixupdater";
   version = "1.0.0";
 
   src = ./src;
 
-  nativeBuildInputs = [ swift ];
+  nativeBuildInputs = [swift];
 
   buildPhase = ''
     make
   '';
 
-installPhase = ''
+  installPhase = ''
     mkdir -p $out
     cp -r NixUpdater.app $out/NixUpdater.app
   '';
