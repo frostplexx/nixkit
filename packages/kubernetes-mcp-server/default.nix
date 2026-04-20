@@ -2,6 +2,7 @@
   lib,
   buildGoModule,
   fetchFromGitHub,
+  nix-update-script,
 }:
 buildGoModule rec {
   pname = "kubernetes-mcp-server";
@@ -18,6 +19,8 @@ buildGoModule rec {
 
   subPackages = ["cmd/kubernetes-mcp-server"];
 
+  passthru.updateScript = nix-update-script {};
+
   meta = with lib; {
     description = "Kubernetes MCP server for AI tools to interact with Kubernetes clusters";
     homepage = "https://github.com/containers/kubernetes-mcp-server";
@@ -25,4 +28,3 @@ buildGoModule rec {
     mainProgram = "kubernetes-mcp-server";
   };
 }
-

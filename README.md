@@ -72,12 +72,10 @@ nix run github:frostplexx/nixkit#opsops
 
 ## 🤖 Automated Updates
 
-The repository includes automated package updates via GitHub Actions:
+Package updates are handled by `scripts/update.py`, which wraps
+[`nix-update`](https://github.com/Mic92/nix-update).
 
-- **Schedule**: Daily at 6 AM Berlin time
-- **Process**: Creates individual PRs for each package update
-- **Safety**: Builds and tests packages before creating PRs
-- **Manual trigger**: Available via GitHub Actions interface
+[Read more](https://frostplexx.github.io/nixkit/#ch-automated-updates)
 
 ## 🤝 Contributing
 
@@ -85,5 +83,6 @@ The repository includes automated package updates via GitHub Actions:
 2. Create corresponding modules in `modules/home/`, `modules/shared/`, or
    platform-specific directories
 3. Update `packages/default.nix` and `flake.nix`
-4. Test with `nix build .#package-name`
-5. Verify `nix-update package-name` works for automated updates
+4. Add `passthru.updateScript = nix-update-script { };` to enable automated
+   updates
+5. Test with `nix build .#package-name`

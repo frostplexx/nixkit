@@ -16,7 +16,11 @@ permissions:
 
 jobs:
   update-packages:
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository

@@ -9,4 +9,5 @@ source: @NIXKIT_OPTIONS_JSON@
 
 ```{=include=} sections
 known-issues.md
+updates.md
 ```

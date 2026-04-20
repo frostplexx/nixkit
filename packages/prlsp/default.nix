@@ -3,6 +3,7 @@
   buildGoModule,
   vimUtils,
   fetchFromGitHub,
+  nix-update-script,
 }: let
   src = fetchFromGitHub {
     owner = "toziegler";
@@ -21,6 +22,8 @@ in {
       substituteInPlace go.mod --replace-fail 'go 1.25.7' 'go 1.24'
     '';
     vendorHash = null;
+    passthru.updateScript = nix-update-script {};
+
     meta = with lib; {
       description = "LSP server that surfaces GitHub PR review comments as editor diagnostics";
       homepage = "https://github.com/toziegler/prlsp";

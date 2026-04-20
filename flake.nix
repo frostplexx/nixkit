@@ -115,6 +115,7 @@
             --replace-fail '@NIXKIT_VERSION@' "${nixkitVersion.release}" \
             --replace-fail '@NIXKIT_OPTIONS_JSON@' ${optionsJSON}/share/doc/nixkit/options.json
           cp ${./docs/manual/known-issues.md} $out/known-issues.md
+          cp ${./docs/manual/updates.md} $out/updates.md
         '';
 
         manualHTML = let
@@ -254,6 +255,7 @@
           packages = with pkgs; [nix-update git python3];
           shellHook = ''
             echo "=> nixkit development environment ready!"
+            echo "   update: python3 scripts/update.py [-p <pkg>] [--dry-run]"
           '';
         };
       };
