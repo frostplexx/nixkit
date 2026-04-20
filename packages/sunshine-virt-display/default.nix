@@ -6,6 +6,7 @@
   python3,
   bash,
   coreutils,
+  nix-update-script,
 }: let
   version = "1.1.0";
 in
@@ -49,6 +50,8 @@ in
 
       ln -s $out/share/sunshine-virt-display/virt_display.sh $out/bin/virt_display.sh
     '';
+
+    passthru.updateScript = nix-update-script {};
 
     meta = {
       description = "Virtual display manager for Sunshine streaming";

@@ -1,5 +1,5 @@
 {...} @ args:
 import ./packages {
   pkgs = args.pkgs or (import <nixpkgs> {});
-  system = args.system;
+  system = args.system or builtins.currentSystem;
 }

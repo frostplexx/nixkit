@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  nix-update-script,
   ...
 }:
 
@@ -40,6 +41,8 @@ stdenv.mkDerivation {
       cp swipe $out/bin/aerospace-swipe
     '';
 
+
+    passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
     meta = with lib; {
         description = "switch workspaces in AeroSpace with trackpad swipes";

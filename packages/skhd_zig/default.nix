@@ -2,6 +2,7 @@
   lib,
   stdenv,
   pkgs,
+  nix-update-script,
 }: let
   version = "0.0.17";
   arch =
@@ -25,6 +26,8 @@ in
       cp skhd-${arch}-macos $out/bin/skhd
       chmod +x $out/bin/skhd
     '';
+
+    passthru.updateScript = nix-update-script {};
 
     meta = with lib; {
       description = "Simple Hotkey Daemon for macOS, ported from skhd by koekeishiya";

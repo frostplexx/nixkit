@@ -2,6 +2,7 @@
   lib,
   python3Packages,
   fetchPypi,
+  nix-update-script,
 }: let
   pyproject-toml = python3Packages.buildPythonPackage rec {
     pname = "pyproject-toml";
@@ -66,12 +67,14 @@
       inherit version;
       sha256 = "sha256-CD7LdbRKQWnn/A9jL5S3gb2w/4d8azW5h3y7Vm/U1NE=";
     };
-    propagatedBuildInputs = (old.propagatedBuildInputs or []) ++ [
-      griffelib
-      py-key-value-aio
-      uncalled-for
-      python3Packages.watchfiles
-    ];
+    propagatedBuildInputs =
+      (old.propagatedBuildInputs or [])
+      ++ [
+        griffelib
+        py-key-value-aio
+        uncalled-for
+        python3Packages.watchfiles
+      ];
     doCheck = false;
   });
 in
@@ -99,6 +102,8 @@ in
     ];
 
     doCheck = false;
+
+    passthru.updateScript = nix-update-script {};
 
     meta = with lib; {
       description = "MCP server for Prometheus integration";
