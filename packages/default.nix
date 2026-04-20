@@ -13,6 +13,7 @@
   packages =
     {
       prometheus-mcp-server = pkgs.callPackage ./prometheus-mcp-server {};
+      kubernetes-mcp-server = pkgs.callPackage ./kubernetes-mcp-server {};
     }
     // (
       if isDarwin
