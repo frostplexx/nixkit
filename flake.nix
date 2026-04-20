@@ -251,6 +251,8 @@
               };
           };
 
+        formatter = pkgs.alejandra;
+
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [nix-update git python3];
           shellHook = ''

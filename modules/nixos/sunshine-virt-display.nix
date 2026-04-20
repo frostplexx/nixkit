@@ -4,13 +4,9 @@
   pkgs,
   ...
 }:
-
-with lib;
-
-let
+with lib; let
   cfg = config.services.sunshine-virt-display;
-in
-{
+in {
   options.services.sunshine-virt-display = {
     enable = mkEnableOption "sunshine-virt-display virtual display integration";
 
@@ -56,16 +52,16 @@ in
 
     security.sudo.extraRules = [
       {
-        users = [ cfg.user ];
+        users = [cfg.user];
         commands = [
           {
             command = "${pkgs.python3}/bin/python3 ${pkgs.sunshine-virt-display}/share/sunshine-virt-display/main.py *";
-            options = [ "NOPASSWD" ];
+            options = ["NOPASSWD"];
           }
         ];
       }
     ];
 
-    boot.kernelModules = [ "debugfs" ];
+    boot.kernelModules = ["debugfs"];
   };
 }

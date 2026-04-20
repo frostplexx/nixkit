@@ -4,13 +4,9 @@
   pkgs,
   ...
 }:
-
-with lib;
-
-let
+with lib; let
   cfg = config.programs.default-browser;
-in
-{
+in {
   options.programs.default-browser = {
     enable = mkEnableOption "Default browser configuration";
 
@@ -23,13 +19,14 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = [
-      # Include the xdg-utils for Linux systems
-      pkgs.xdg-utils
-    ]
-    ++ lib.optional pkgs.stdenv.isDarwin pkgs.defaultbrowser;
+    home.packages =
+      [
+        # Include the xdg-utils for Linux systems
+        pkgs.xdg-utils
+      ]
+      ++ lib.optional pkgs.stdenv.isDarwin pkgs.defaultbrowser;
 
-    home.activation.setDefaultBrowser = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    home.activation.setDefaultBrowser = lib.hm.dag.entryAfter ["writeBoundary"] ''
       setDefaultBrowser() {
         local browser="$1"
         local isLinux
@@ -48,8 +45,10 @@ in
           # macOS systems use the compiled utility
           echo "Setting default browser to $browser"
           $DRY_RUN_CMD ${
-            if pkgs.stdenv.isDarwin then "${pkgs.defaultbrowser}/bin/defaultbrowser" else "defaultbrowser"
-          } "$browser"
+        if pkgs.stdenv.isDarwin
+        then "${pkgs.defaultbrowser}/bin/defaultbrowser"
+        else "defaultbrowser"
+      } "$browser"
         fi
       }
 

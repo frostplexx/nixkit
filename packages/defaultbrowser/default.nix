@@ -3,14 +3,13 @@
   stdenv,
   darwin,
 }:
-
 stdenv.mkDerivation {
   pname = "defaultbrowser";
   version = "1.0.0";
 
   src = ./src;
 
-  buildInputs = [ ];
+  buildInputs = [];
 
   buildPhase = ''
     make
