@@ -6,7 +6,6 @@ Automatically updates packages and optionally creates PRs in CI.
 
 import argparse
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -86,44 +85,10 @@ def run_command(
         return 1, str(e)
 
 
-def get_current_system() -> str:
-    """Return the current Nix system string (e.g. aarch64-darwin)."""
-    exit_code, system = run_command(
-        ["nix", "eval", "--impure", "--raw", "--expr", "builtins.currentSystem"]
-    )
-    if exit_code != 0:
-        log("error", "Failed to determine system")
-        sys.exit(1)
-    return system.strip()
-
-
-def get_packages() -> dict[str, dict]:
-    """Discover packages by scanning packages/*/default.nix files.
-
-    Skips packages without 'passthru.updateScript'.
-    Returns {name: {linux_only: bool}}.
-    """
-    log("info", "Discovering packages...")
-    packages = {}
-    for name in sorted(os.listdir("packages")):
-        path = os.path.join("packages", name, "default.nix")
-        if not os.path.isfile(path):
-            continue
-        with open(path, encoding="utf-8") as f:
-            content = f.read()
-        if "passthru.updateScript" not in content:
-            continue
-        linux_only = bool(
-            re.search(r"platforms\.linux", content)
-            and not re.search(r"platforms\.(darwin|unix)", content)
-        )
-        packages[name] = {"linux_only": linux_only}
-    log("info", f"Found packages: {' '.join(packages.keys())}")
-    return packages
-
-
 def _read_version(package: str, cwd: Optional[str] = None) -> str:
     """Read version from packages/{package}/default.nix (last match = main derivation)."""
+    import re
+
     try:
         path = os.path.join(cwd or ".", "packages", package, "default.nix")
         with open(path, encoding="utf-8") as f:
@@ -136,22 +101,11 @@ def _read_version(package: str, cwd: Optional[str] = None) -> str:
 
 def update_package(  # pylint: disable=too-many-branches,too-many-statements,too-many-locals,too-many-return-statements
     package: str,
-    info: dict,
-    system: str,
     create_pr: bool = False,
     dry_run: bool = False,
 ) -> UpdateResult:
     """Run nix-update for a single package and return the result."""
     log("info", f"Checking {package}..." + (" (dry run)" if dry_run else ""))
-
-    # On Linux: only update packages that are explicitly Linux-only.
-    # Cross-platform packages are handled by the macOS runner to avoid double-updates.
-    if "linux" in system and not info["linux_only"]:
-        return UpdateResult(
-            package,
-            UpdateStatus.SKIPPED,
-            error="Cross-platform — updated by macOS runner",
-        )
 
     # In dry-run mode, copy the repo to a temp dir so nix-update never
     # touches the real working tree.
@@ -277,15 +231,20 @@ def print_summary(results: list[UpdateResult], dry_run: bool = False) -> int:
 
 
 def main():  # pylint: disable=too-many-branches
-    """Entry point: parse args, discover packages, run updates."""
+    """Entry point: parse args, run updates."""
     parser = argparse.ArgumentParser(description="Update nixkit packages")
     parser.add_argument(
-        "-p",
-        "--package",
+        "--os",
+        metavar="OS",
+        required=True,
+        help="Operating system (linux or darwin)",
+    )
+    parser.add_argument(
+        "--packages",
         metavar="PKG",
-        action="append",
-        dest="packages",
-        help="Only update this package (can be specified multiple times)",
+        nargs="+",
+        required=True,
+        help="Packages to update (space-separated list)",
     )
     parser.add_argument(
         "-d",
@@ -308,24 +267,13 @@ def main():  # pylint: disable=too-many-branches
             if input("Continue anyway? (y/N): ").strip().lower() != "y":
                 sys.exit(0)
 
-    system = get_current_system()
-    all_packages = get_packages()
-
-    if args.packages:
-        unknown = set(args.packages) - set(all_packages.keys())
-        if unknown:
-            log("error", f"Unknown package(s): {' '.join(sorted(unknown))}")
-            sys.exit(1)
-        packages = {k: all_packages[k] for k in args.packages}
-    else:
-        packages = all_packages
+    log("info", f"OS: {args.os}")
+    log("info", f"Packages: {' '.join(args.packages)}")
     print()
 
     results = []
-    for package, info in packages.items():
-        result = update_package(
-            package, info, system, create_pr=create_prs, dry_run=args.dry_run
-        )
+    for package in args.packages:
+        result = update_package(package, create_pr=create_prs, dry_run=args.dry_run)
 
         if result.status == UpdateStatus.SUCCESS:
             log(

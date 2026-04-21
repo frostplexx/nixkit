@@ -16,46 +16,74 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v22
+
       - name: Detect changed packages and platforms
         id: detect
         env:
           GITHUB_BASE_REF: ${{ github.base_ref }}
         run: |
           python3 << 'EOF'
-          import json, os, re, subprocess
+          import json, os, subprocess
 
           diff = subprocess.check_output(
               ['git', 'diff', '--name-only', f'origin/{os.environ["GITHUB_BASE_REF"]}...HEAD']
           ).decode()
 
-          macos_pkgs, linux_pkgs = [], []
+          changed_packages = set()
           for line in diff.splitlines():
-              m = re.match(r'^packages/([^/]+)/default\.nix$', line)
-              if not m:
-                  continue
-              pkg = m.group(1)
-              try:
-                  content = open(f'packages/{pkg}/default.nix').read()
-              except FileNotFoundError:
-                  continue
-              # Skip packages without an updateScript (same logic as update.py)
-              if 'passthru.updateScript' not in content:
-                  continue
-              # platforms.linux without darwin/unix → Linux-only runner
-              if re.search(r'platforms\.linux', content) and not re.search(r'platforms\.(darwin|unix)', content):
-                  linux_pkgs.append(pkg)
-              else:
-                  macos_pkgs.append(pkg)
+              parts = line.split('/')
+              if len(parts) >= 2 and parts[0] == 'packages':
+                  changed_packages.add(parts[1])
+
+          if not changed_packages:
+              matrix = {"include": [{"runner": "ubuntu-latest", "os": "linux", "packages": ""}]}
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                  f.write(f"matrix={json.dumps(matrix)}\n")
+              exit(0)
+
+          # Find packages with updateScript (check on aarch64-darwin since all packages are defined there)
+          updatable = set()
+          for pkg in changed_packages:
+              result = subprocess.run(
+                  ['nix', 'eval', '--json', f'.#packages.aarch64-darwin.{pkg}.passthru.updateScript'],
+                  capture_output=True
+              )
+              if result.returncode == 0:
+                  updatable.add(pkg)
+
+          if not updatable:
+              matrix = {"include": [{"runner": "ubuntu-latest", "os": "linux", "packages": ""}]}
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                  f.write(f"matrix={json.dumps(matrix)}\n")
+              exit(0)
+
+          # Get all packages per system (no full evaluation)
+          all_packages = json.loads(subprocess.check_output(
+              ['nix', 'eval', '--json', '.#packages', '--apply', 
+               'builtins.mapAttrs (system: pkgs: builtins.attrNames pkgs)']
+          ).decode())
 
           matrix = {"include": []}
-          if macos_pkgs:
-              matrix["include"].append({"runner": "macos-latest", "packages": " ".join(macos_pkgs)})
-          if linux_pkgs:
-              matrix["include"].append({"runner": "ubuntu-latest", "packages": " ".join(linux_pkgs)})
-          # No packages changed: inject a no-op entry so the matrix job always
-          # runs and the required "dry-run" status check is always reported.
+          for system_key, packages in all_packages.items():
+              if system_key not in ("aarch64-darwin", "x86_64-darwin", "aarch64-linux", "x86_64-linux"):
+                  continue
+
+              os_name = "linux" if "linux" in system_key else "darwin"
+              runner = "ubuntu-latest" if "linux" in system_key else "macos-latest"
+
+              system_packages = [pkg for pkg in packages if pkg in updatable]
+              
+              if system_packages:
+                  matrix["include"].append({
+                      "runner": runner,
+                      "os": os_name,
+                      "packages": " ".join(system_packages)
+                  })
+
           if not matrix["include"]:
-              matrix["include"].append({"runner": "ubuntu-latest", "packages": ""})
+              matrix["include"].append({"runner": "ubuntu-latest", "os": "linux", "packages": ""})
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"matrix={json.dumps(matrix)}\n")
@@ -87,8 +115,7 @@ jobs:
       - name: Dry-run update check
         if: matrix.packages != ''
         run: |
-          args=$(printf -- '-p %s ' ${{ matrix.packages }})
-          ./scripts/update.py $args --dry-run
+          ./scripts/update.py --os ${{ matrix.os }} --packages ${{ matrix.packages }} --dry-run
 
   # Fixed-name job so the required status check "dry-run" always exists.
   # check always runs (matrix always has ≥1 entry), so this job always runs too.
