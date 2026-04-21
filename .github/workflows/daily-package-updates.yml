@@ -32,14 +32,26 @@ jobs:
           # Get all package names per system (no evaluation)
           all_packages=$(nix eval --json '.#packages' --apply 'builtins.mapAttrs (system: pkgs: builtins.attrNames pkgs)')
 
-          # Check for updateScript on aarch64-darwin (all packages are defined there)
-          packages=$(echo "$all_packages" | jq -r '.["aarch64-darwin"][]')
+          target_systems="aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux"
 
+          # Build the candidate package list from the union of supported systems
+          packages=$(echo "$all_packages" | jq -r '
+            to_entries
+            | map(select(.key | . == "aarch64-darwin" or . == "x86_64-darwin" or . == "aarch64-linux" or . == "x86_64-linux"))
+            | map(.value[])
+            | unique
+            | .[]
+          ')
+
+          # A package is updatable if any supported system exposes an updateScript for it
           updatable=""
           for pkg in $packages; do
-            if nix eval --json ".#packages.aarch64-darwin.$pkg.passthru.updateScript" 2>/dev/null >/dev/null; then
-              updatable="$updatable $pkg"
-            fi
+            for system in $target_systems; do
+              if nix eval --json ".#packages.$system.$pkg.passthru.updateScript" 2>/dev/null >/dev/null; then
+                updatable="$updatable $pkg"
+                break
+              fi
+            done
           done
           updatable=$(echo $updatable | xargs)  # trim whitespace
 
