@@ -15,6 +15,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 
+import pr
+
 
 class Color:  # pylint: disable=too-few-public-methods
     """ANSI color codes for terminal output."""
@@ -161,12 +163,10 @@ def update_package(  # pylint: disable=too-many-branches,too-many-statements,too
         run_cwd = tmp_copy
 
     try:
-        branch_name = f"update/{package}"
+        branch_name = pr.branch_name_for(package)
         if create_pr:
-            run_command(["git", "checkout", "main", "-q"])
-            run_command(["git", "branch", "-D", branch_name])
-            exit_code, _ = run_command(["git", "checkout", "-b", branch_name, "-q"])
-            if exit_code != 0:
+            success, branch_name = pr.prepare_branch(package)
+            if not success:
                 return UpdateResult(
                     package, UpdateStatus.FAILED, error="Failed to create branch"
                 )
@@ -184,12 +184,12 @@ def update_package(  # pylint: disable=too-many-branches,too-many-statements,too
 
         if update_exit_code == 124:
             if create_pr:
-                cleanup_branch(package, branch_name, up_to_date=False)
+                pr.cleanup_branch(package, branch_name, up_to_date=False)
             return UpdateResult(package, UpdateStatus.FAILED, error="Timeout")
 
         if update_exit_code not in (0, 2):
             if create_pr:
-                cleanup_branch(package, branch_name, up_to_date=False)
+                pr.cleanup_branch(package, branch_name, up_to_date=False)
             return UpdateResult(package, UpdateStatus.FAILED, error=output.strip())
 
         # Detect whether an update actually happened via git state, not output parsing:
@@ -211,89 +211,18 @@ def update_package(  # pylint: disable=too-many-branches,too-many-statements,too
             )
 
             if create_pr:
-                diff_exit_code, _ = run_command(
-                    ["git", "diff", "--quiet", "main..HEAD"]
-                )
-                if diff_exit_code != 0:
-                    push_code, _ = run_command(
-                        ["git", "push", "origin", branch_name, "--force"],
-                        capture=False,
-                    )
-                    if push_code == 0:
-                        handle_pr(package, branch_name, version_info)
-                else:
-                    handle_pr(package, branch_name, version_info)
+                pr.publish_update(package, branch_name, version_info)
 
             return UpdateResult(
                 package, UpdateStatus.SUCCESS, version_info=version_info
             )
 
         if create_pr:
-            cleanup_branch(package, branch_name, up_to_date=True)
+            pr.cleanup_branch(package, branch_name, up_to_date=True)
         return UpdateResult(package, UpdateStatus.UP_TO_DATE)
     finally:
         if tmp_copy:
             shutil.rmtree(tmp_copy, ignore_errors=True)
-
-
-def handle_pr(package: str, branch: str, version_info: str):
-    """Create or update the GitHub PR for a package update branch."""
-    exit_code, pr_state = run_command(
-        ["gh", "pr", "view", branch, "--json", "state", "--jq", ".state"]
-    )
-    pr_state = pr_state.strip() if exit_code == 0 else "NOT_FOUND"
-
-    title = f"chore(deps): update {package} to {version_info}"
-    body = f"Automated update of {package} to {version_info}"
-
-    if pr_state == "OPEN":
-        log("info", f"Updating existing PR for {package}")
-        run_command(
-            ["gh", "pr", "edit", branch, "--title", title, "--body", body],
-            capture=False,
-        )
-    else:
-        log("info", f"Creating PR for {package}")
-        run_command(
-            [
-                "gh",
-                "pr",
-                "create",
-                "--title",
-                title,
-                "--body",
-                body,
-                "--head",
-                branch,
-                "--base",
-                "main",
-            ],
-            capture=False,
-        )
-
-
-def cleanup_branch(package: str, branch: str, up_to_date: bool):
-    """Delete the update branch and close its PR if the package is already current."""
-    run_command(["git", "checkout", "main", "-q"])
-    run_command(["git", "branch", "-D", branch])
-
-    if up_to_date:
-        exit_code, pr_state = run_command(
-            ["gh", "pr", "view", branch, "--json", "state", "--jq", ".state"]
-        )
-        if exit_code == 0 and pr_state.strip() == "OPEN":
-            log("info", f"Closing obsolete PR for {package}")
-            run_command(
-                [
-                    "gh",
-                    "pr",
-                    "close",
-                    branch,
-                    "--comment",
-                    "Package is already up to date",
-                    "--delete-branch",
-                ],
-            )
 
 
 def print_summary(results: list[UpdateResult], dry_run: bool = False) -> int:
