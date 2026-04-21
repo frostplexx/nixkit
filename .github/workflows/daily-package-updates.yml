@@ -55,17 +55,26 @@ jobs:
           done
           updatable=$(echo $updatable | xargs)  # trim whitespace
 
-          # Build matrix from package list, filtered by updatable packages
+          # Build matrix from package list, partitioned so each package is updated on exactly one OS.
+          # Prefer darwin for cross-platform packages and reserve linux for linux-only packages.
           matrix=$(echo "$all_packages" | jq -c --arg updatable "$updatable" '
-            ($updatable | split(" ")) as $upd_list |
-            to_entries
-            | map(select(.key | . == "aarch64-darwin" or . == "x86_64-darwin" or . == "aarch64-linux" or . == "x86_64-linux"))
-            | map({
-                os: (.key | if contains("linux") then "linux" else "darwin" end),
-                runner: (.key | if contains("linux") then "ubuntu-latest" else "macos-latest" end),
-                system: .key,
-                packages: (.value | map(select(. as $pkg | $upd_list | index($pkg))))
-              })
+            ($updatable | split(" ") | map(select(length > 0))) as $upd_list |
+            ((.["aarch64-darwin"] + .["x86_64-darwin"]) | unique) as $darwin_pkgs |
+            ((.["aarch64-linux"] + .["x86_64-linux"]) | unique) as $linux_pkgs |
+            [
+              {
+                os: "darwin",
+                runner: "macos-latest",
+                system: "darwin",
+                packages: ($darwin_pkgs | map(select(. as $pkg | $upd_list | index($pkg))))
+              },
+              {
+                os: "linux",
+                runner: "ubuntu-latest",
+                system: "linux",
+                packages: (($linux_pkgs - $darwin_pkgs) | map(select(. as $pkg | $upd_list | index($pkg))))
+              }
+            ]
             | map(select(.packages | length > 0))
             | {include: .}
           ')
