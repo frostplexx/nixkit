@@ -1,6 +1,4 @@
-_:
-
-{
+_: {
   imports = [
     ./default-browser.nix
     ./ndcli.nix

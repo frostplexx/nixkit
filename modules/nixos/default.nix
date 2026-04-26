@@ -1,6 +1,4 @@
-_:
-
-{
+_: {
   imports = [
     ../shared
     ./sunshine-virt-display.nix

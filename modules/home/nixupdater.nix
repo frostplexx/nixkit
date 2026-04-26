@@ -1,17 +1,12 @@
 {
-
   config,
   lib,
   pkgs,
   ...
 }:
-
-with lib;
-
-let
+with lib; let
   cfg = config.programs.nixupdater;
-in
-{
+in {
   options.programs.nixupdater = {
     enable = mkEnableOption "nixupdater configuration";
 
@@ -104,5 +99,4 @@ in
       };
     };
   };
-
 }

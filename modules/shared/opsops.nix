@@ -4,18 +4,14 @@
   pkgs,
   ...
 }:
-
-with lib;
-
-let
+with lib; let
   cfg = config.programs.opsops;
-in
-{
+in {
   options.programs.opsops = {
     enable = mkEnableOption "opsops";
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = [ pkgs.opsops ];
+    environment.systemPackages = [pkgs.opsops];
   };
 }

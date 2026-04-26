@@ -2,8 +2,8 @@
   lib,
   python3Packages,
   fetchFromGitHub,
+  nix-update-script,
 }:
-
 python3Packages.buildPythonPackage rec {
   pname = "dimclient";
   version = "5.0.4";
@@ -23,6 +23,8 @@ python3Packages.buildPythonPackage rec {
     pip
     wheel
   ];
+
+  passthru.updateScript = nix-update-script {extraArgs = ["--version-regex" "ndcli-([0-9]+\\.[0-9]+\\.[0-9]+)$"];};
 
   meta = with lib; {
     description = "Python client for DIM (DNS and IP Management)";

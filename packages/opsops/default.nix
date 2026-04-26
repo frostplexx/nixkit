@@ -5,8 +5,8 @@
   pkg-config,
   openssl,
   sops,
+  nix-update-script,
 }:
-
 rustPlatform.buildRustPackage rec {
   pname = "opsops";
   version = "1.3.5";
@@ -43,6 +43,8 @@ rustPlatform.buildRustPackage rec {
     # Install fish completions
     cp $TMPDIR/docs/completions/opsops.fish $out/share/fish/vendor_completions.d/
   '';
+
+  passthru.updateScript = nix-update-script {};
 
   meta = with lib; {
     description = "A simple tool for managing secrets (with 1password integration)";

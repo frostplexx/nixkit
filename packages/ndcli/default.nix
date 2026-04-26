@@ -3,8 +3,8 @@
   python3Packages,
   fetchFromGitHub,
   dimclient,
+  nix-update-script,
 }:
-
 python3Packages.buildPythonPackage rec {
   pname = "ndcli";
   version = "5.0.4";
@@ -32,25 +32,27 @@ python3Packages.buildPythonPackage rec {
   ];
 
   postInstall = ''
-    # Install bash completions
-    mkdir -p $out/share/bash-completion/completions
-    cp bash_completion.d/ndcli $out/share/bash-completion/completions/ndcli
+        # Install bash completions
+        mkdir -p $out/share/bash-completion/completions
+        cp bash_completion.d/ndcli $out/share/bash-completion/completions/ndcli
 
-    # Install fish completions
-    mkdir -p $out/share/fish/vendor_completions.d
-    cat > $out/share/fish/vendor_completions.d/ndcli.fish <<'EOF'
-# Fish completion for ndcli
-# ndcli uses bash programmable completion, so we wrap it for fish
-function __ndcli_complete
-    set -l cmd (commandline -cp)
-    set -l COMP_LINE "$cmd"
-    set -l COMP_POINT (string length "$COMP_LINE")
-    env COMP_LINE="$COMP_LINE" COMP_POINT=$COMP_POINT ndcli | string split ' '
-end
+        # Install fish completions
+        mkdir -p $out/share/fish/vendor_completions.d
+        cat > $out/share/fish/vendor_completions.d/ndcli.fish <<'EOF'
+    # Fish completion for ndcli
+    # ndcli uses bash programmable completion, so we wrap it for fish
+    function __ndcli_complete
+        set -l cmd (commandline -cp)
+        set -l COMP_LINE "$cmd"
+        set -l COMP_POINT (string length "$COMP_LINE")
+        env COMP_LINE="$COMP_LINE" COMP_POINT=$COMP_POINT ndcli | string split ' '
+    end
 
-complete -c ndcli -f -a '(__ndcli_complete)'
-EOF
+    complete -c ndcli -f -a '(__ndcli_complete)'
+    EOF
   '';
+
+  passthru.updateScript = nix-update-script {extraArgs = ["--version-regex" "ndcli-([0-9]+\\.[0-9]+\\.[0-9]+)$"];};
 
   meta = with lib; {
     description = "Command line interface for DIM (DNS and IP Management)";
