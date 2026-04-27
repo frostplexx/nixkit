@@ -4,7 +4,7 @@
   pkgs,
   nix-update-script,
 }: let
-  version = "0.0.17";
+  version = "0.0.23";
   arch =
     if stdenv.hostPlatform.isAarch64
     then "arm64"
