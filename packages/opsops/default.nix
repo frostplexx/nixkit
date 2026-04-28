@@ -9,13 +9,13 @@
 }:
 rustPlatform.buildRustPackage rec {
   pname = "opsops";
-  version = "1.3.5";
+  version = "1.3.6";
 
   src = fetchFromGitHub {
     owner = "frostplexx";
     repo = "opsops";
     rev = "v${version}";
-    sha256 = "sha256-sCd1DeNO//d1LnzB8FOeNAIrHRYy5lxHZ5G6PYVE9ig=";
+    sha256 = "sha256-VHlJfzRqpvMXKYS/EepfIGzNIjL3/HT+1Pmt63++dyw=";
   };
 
   cargoHash = "sha256-dw2WmGNZ4vFaOES13Yfg9OSJu0HO0qSZ52P177ZKEk0=";
