@@ -2,6 +2,9 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "reviewers": ["frostplexx", "ojsef39"],
   "extends": ["config:recommended"],
+  "nix": {
+    "enabled": true
+  },
   "customManagers": [
     {
       "customType": "regex",
@@ -15,6 +18,11 @@
     {
       "matchPackageNames": ["ojsef39/flake-review"],
       "groupName": "flake-review"
+    },
+    {
+      "matchManagers": ["nix", "nix-update"],
+      "automerge": true,
+      "automergeType": "pr"
     }
   ]
 }
