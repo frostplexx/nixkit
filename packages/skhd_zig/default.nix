@@ -23,7 +23,7 @@ in
       chmod +x $out/bin/skhd
     '';
 
-    passthru.updateScript = nix-update-script {};
+    passthru.updateScript = nix-update-script {extraArgs = ["--version-regex" "v([0-9]+\\.[0-9]+\\.[0-9]+)$"];};
 
     meta = with lib; {
       description = "Simple Hotkey Daemon for macOS, ported from skhd by koekeishiya";
