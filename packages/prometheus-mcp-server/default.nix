@@ -80,13 +80,13 @@
 in
   python3Packages.buildPythonApplication rec {
     pname = "prometheus-mcp-server";
-    version = "1.6.0";
+    version = "1.6.1";
     pyproject = true;
 
     src = fetchPypi {
       pname = builtins.replaceStrings ["-"] ["_"] pname;
       inherit version;
-      sha256 = "sha256-Ot2ii/RPWgpz6HmWadGBsE+8+Rmm5zRKH9YFO8mE2yk=";
+      sha256 = "sha256-Svv4rgq6RyNfYQIPuJxPO01SqL4d/KCt/Iv1ZuXYIOw=";
     };
 
     nativeBuildInputs = with python3Packages; [setuptools];
