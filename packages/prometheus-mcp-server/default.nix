@@ -30,19 +30,6 @@
     doCheck = false;
   };
 
-  uncalled-for = python3Packages.buildPythonPackage rec {
-    pname = "uncalled-for";
-    version = "0.2.0";
-    pyproject = true;
-    src = fetchPypi {
-      pname = builtins.replaceStrings ["-"] ["_"] pname;
-      inherit version;
-      sha256 = "sha256-tPj9vOwyjFoROAfWU+BBxQlEc91K+nw0WZrOacy35p8=";
-    };
-    nativeBuildInputs = with python3Packages; [hatchling hatch-vcs];
-    doCheck = false;
-  };
-
   py-key-value-aio = python3Packages.py-key-value-aio.overridePythonAttrs (_: rec {
     version = "0.4.4";
     src = fetchPypi {
@@ -72,7 +59,7 @@
       ++ [
         griffelib
         py-key-value-aio
-        uncalled-for
+        python3Packages.uncalled-for
         python3Packages.watchfiles
       ];
     doCheck = false;
