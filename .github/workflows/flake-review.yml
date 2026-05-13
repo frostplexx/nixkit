@@ -3,11 +3,6 @@ name: Flake Review
 on:
   pull_request:
     branches: [main]
-    paths:
-      - "flake.nix"
-      - "flake.lock"
-      - "packages/**/default.nix"
-      - ".github/workflows/flake-review.yml"
 
 concurrency:
   group: ${{ inputs.concurrency-group || format('{0}-{1}', github.workflow, github.ref) }}
