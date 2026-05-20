@@ -8,7 +8,7 @@
   coreutils,
   nix-update-script,
 }: let
-  version = "1.1.0";
+  version = "2.0.0";
 in
   stdenv.mkDerivation {
     pname = "sunshine-virt-display";
@@ -18,7 +18,7 @@ in
       owner = "frostplexx";
       repo = "sunshine_virt_display";
       rev = "v${version}";
-      sha256 = "17sjk8f4xhdgmsanr3pkb865v60v042lwsdwh5ghrigzdiddgbcv";
+      sha256 = "sha256-RjkGp76S8zEHHHPa31+CbSzT45a8QTvG6CfYkxhjOpY=";
     };
 
     nativeBuildInputs = [makeWrapper];
