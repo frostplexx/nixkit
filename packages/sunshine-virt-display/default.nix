@@ -17,10 +17,10 @@ in
     inherit version;
 
     src = fetchFromGitHub {
-      owner = "frostplexx";
+      owner = "OKlueck";
       repo = "sunshine_virt_display";
-      rev = "v${version}";
-      sha256 = "sha256-RjkGp76S8zEHHHPa31+CbSzT45a8QTvG6CfYkxhjOpY=";
+      rev = "fix/nvidia-hyprland-safe-restore";
+      sha256 = "sha256-rrTNG6N6McR9UqRePgHiMkPe8yF2gA5B4XsHZco/vVA=";
     };
 
     nativeBuildInputs = [makeWrapper];
