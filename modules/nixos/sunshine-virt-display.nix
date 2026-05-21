@@ -6,14 +6,17 @@
 }:
 with lib; let
   cfg = config.services.sunshine-virt-display;
+  socket = "/tmp/sunshineVD.sock";
+  nc = "${pkgs.netcat-openbsd}/bin/nc";
 in {
+  imports = [
+    (mkRemovedOptionModule
+      ["services" "sunshine-virt-display" "user"]
+      "sunshine-virt-display v2 runs as a root systemd daemon and no longer needs a per-user sudo rule. Remove `services.sunshine-virt-display.user` from your configuration.")
+  ];
+
   options.services.sunshine-virt-display = {
     enable = mkEnableOption "sunshine-virt-display virtual display integration";
-
-    user = mkOption {
-      type = types.str;
-      description = "Username to grant passwordless sudo for the virtual display script";
-    };
 
     virtual-desktop-icon = mkOption {
       type = types.nullOr types.path;
@@ -33,14 +36,29 @@ in {
       }
     ];
 
+    systemd.services.sunshineVD = {
+      description = "Sunshine Virtual Display Daemon";
+      wantedBy = ["multi-user.target"];
+      after = ["display-manager.service" "dbus.service"];
+      requires = ["dbus.service"];
+      serviceConfig = {
+        Type = "simple";
+        ExecStart = "${pkgs.sunshine-virt-display}/bin/sunshineVD";
+        Restart = "always";
+        RestartSec = 3;
+        TimeoutStopSec = 10;
+        StateDirectory = "sunshine-virt-display";
+      };
+    };
+
     services.sunshine.applications.apps = [
       (
         {
           name = "Virtual Desktop";
           prep-cmd = [
             {
-              do = ''sh -c "${pkgs.sunshine-virt-display}/bin/virt_display.sh --connect --width ''${SUNSHINE_CLIENT_WIDTH} --height ''${SUNSHINE_CLIENT_HEIGHT} --refresh-rate ''${SUNSHINE_CLIENT_FPS}"'';
-              undo = "${pkgs.sunshine-virt-display}/bin/virt_display.sh --disconnect";
+              do = ''sh -c "echo --connect,--width,''${SUNSHINE_CLIENT_WIDTH},--height,''${SUNSHINE_CLIENT_HEIGHT},--refresh-rate,''${SUNSHINE_CLIENT_FPS} | ${nc} -U ${socket}"'';
+              undo = ''sh -c "echo --disconnect | ${nc} -U ${socket}"'';
             }
           ];
         }
@@ -48,18 +66,6 @@ in {
           image-path = cfg.virtual-desktop-icon;
         }
       )
-    ];
-
-    security.sudo.extraRules = [
-      {
-        users = [cfg.user];
-        commands = [
-          {
-            command = "${pkgs.python3}/bin/python3 ${pkgs.sunshine-virt-display}/share/sunshine-virt-display/main.py *";
-            options = ["NOPASSWD"];
-          }
-        ];
-      }
     ];
 
     boot.kernelModules = ["debugfs"];
