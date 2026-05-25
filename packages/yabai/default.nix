@@ -44,7 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   dontConfigure = true;
-  enableParallelBuilding = true;
+  enableParallelBuilding = false;
 
   postPatch = ''
     # Build only for current architecture (arm64)
