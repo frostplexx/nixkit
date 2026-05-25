@@ -23,6 +23,7 @@
         opsops = pkgs.callPackage ./opsops {};
         aerospace-swipe = pkgs.callPackage ./aerospace-swipe {};
         skhd_zig = pkgs.callPackage ./skhd_zig {};
+        yabai = pkgs'.callPackage ./yabai {};
       }
       else {}
     )
