@@ -74,27 +74,22 @@ with lib; let
     };
   } // cfg.extraConfig;
 
-  # Build the .rayconfig file
+  # Python environment and scripts
+  pythonEnv = pkgs.python3.withPackages (ps: [ps.cryptography]);
+  buildScript = ./build.py;
+
+  # Build the .rayconfig file using the Python build script
   mkRayconfig = configJson: encryptPassword:
     pkgs.runCommand "raycast.rayconfig" {
-      nativeBuildInputs = with pkgs; [gzip openssl];
+      nativeBuildInputs = [pythonEnv];
       json = builtins.toJSON configJson;
       passAsFile = ["json"];
     } (if encryptPassword != null then ''
-      # Encrypted .rayconfig format
-      # 1. Gzip the JSON
-      # 2. Add a 16-byte header (using a pristine export header)
-      # 3. Encrypt with AES-256-CBC
-
-      # Create a dummy 16-byte header (Raycast format marker)
-      printf '\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x00' > header.bin
-      printf '\x00\x00\x00\x00\x00\x00' >> header.bin
-
-      cat "$jsonPath" | gzip | cat header.bin - | \
-        openssl enc -e -aes-256-cbc -nosalt -k "${encryptPassword}" -out "$out"
+      # Build encrypted .rayconfig using Scrypt + AES-256-GCM
+      ${pythonEnv}/bin/python3 ${buildScript} "$jsonPath" "${encryptPassword}" "$out"
     '' else ''
-      # Unencrypted .rayconfig format (just gzipped JSON)
-      gzip -c "$jsonPath" > "$out"
+      # Build unencrypted .rayconfig (gzipped only)
+      ${pythonEnv}/bin/python3 ${buildScript} "$jsonPath" "" "$out"
     '');
 
   # Determine the final config to use
@@ -337,9 +332,6 @@ in {
     # Always provide helper scripts (even when module is disabled)
     {
       home.packages = let
-        # Python environment with cryptography
-        pythonEnv = pkgs.python3.withPackages (ps: [ps.cryptography]);
-
         # Standalone Python scripts
         decryptScript = ./decrypt.py;
         encryptScript = ./encrypt.py;
