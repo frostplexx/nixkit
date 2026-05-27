@@ -348,12 +348,13 @@ in {
             echo ""
             echo "Arguments:"
             echo "  input.rayconfig  Path to the .rayconfig file"
-            echo "  password         Decryption password (default: 12345678)"
+            echo "  password         Decryption password (default: 12345678, use empty string for unencrypted)"
             echo "  output.json      Output file path (default: input name with .json)"
             echo ""
             echo "Examples:"
             echo "  raycast-decrypt-config export.rayconfig"
             echo "  raycast-decrypt-config export.rayconfig mysecret output.json"
+            echo "  raycast-decrypt-config export.rayconfig \"\" output.json  # for unencrypted"
             exit 1
           fi
 
@@ -368,32 +369,103 @@ in {
 
           echo "Decrypting $INPUT_FILE..."
 
-          # Try decrypting (for encrypted files)
-          # The openssl command decrypts, tail removes the 16-byte header, gunzip decompresses
-          if ${pkgs.openssl}/bin/openssl enc -d -aes-256-cbc -nosalt \
-             -in "$INPUT_FILE" -k "$PASSWORD" 2>/dev/null | \
-             tail -c +17 | ${pkgs.gzip}/bin/gunzip > "$OUTPUT_FILE" 2>/dev/null; then
-            echo "✓ Successfully decrypted to: $OUTPUT_FILE"
-            echo ""
-            echo "File size: $(wc -c < "$OUTPUT_FILE") bytes"
-            echo "To use with this module:"
-            echo "  programs.raycast.configFile = $OUTPUT_FILE;"
-          # Try plain gunzip (for unencrypted files)
-          elif ${pkgs.gzip}/bin/gunzip -c "$INPUT_FILE" > "$OUTPUT_FILE" 2>/dev/null; then
-            echo "✓ Successfully decompressed (unencrypted) to: $OUTPUT_FILE"
-            echo ""
-            echo "File size: $(wc -c < "$OUTPUT_FILE") bytes"
-            echo "To use with this module:"
-            echo "  programs.raycast.configFile = $OUTPUT_FILE;"
-          else
-            echo "✗ Error: Failed to decrypt/decompress file"
-            echo ""
-            echo "Possible causes:"
-            echo "  - Wrong password (try different password or default '12345678')"
-            echo "  - Corrupted file"
-            echo "  - Not a valid .rayconfig file"
-            exit 1
-          fi
+          # Create a Python script to handle decryption
+          ${pkgs.python3.withPackages (ps: [ps.cryptography])}/bin/python3 - "$INPUT_FILE" "$PASSWORD" "$OUTPUT_FILE" <<'PYTHON'
+          import sys
+          import json
+          import gzip
+          from pathlib import Path
+
+          try:
+              from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+              from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+              from cryptography.hazmat.primitives import hashes
+              from cryptography.hazmat.backends import default_backend
+              has_crypto = True
+          except ImportError:
+              has_crypto = False
+
+          input_file = sys.argv[1]
+          password = sys.argv[2]
+          output_file = sys.argv[3]
+
+          # Read and decompress the .rayconfig file
+          try:
+              with gzip.open(input_file, 'rt') as f:
+                  config = json.load(f)
+          except gzip.BadGzipFile:
+              # Already decompressed JSON
+              with open(input_file, 'r') as f:
+                  config = json.load(f)
+
+          # Check if data field is encrypted (has encryption metadata)
+          if 'encryption' in config and config.get('data'):
+              if not has_crypto:
+                  print("✗ Error: File is encrypted but cryptography module is not available")
+                  print("Install with: pip install cryptography")
+                  sys.exit(1)
+
+              if not password:
+                  print("✗ Error: File is encrypted but no password provided")
+                  sys.exit(1)
+
+              print("Decrypting data field...")
+
+              # Extract encryption parameters
+              password_bytes = password.encode('utf-8')
+              iv = bytes.fromhex(config['encryption']['iv'])
+              salt = bytes.fromhex(config['encryption']['salt'])
+              auth_tag = bytes.fromhex(config['encryption']['authTag'])
+              encrypted_data = bytes.fromhex(config['data'])
+
+              # Derive key from password and salt using PBKDF2
+              kdf = PBKDF2HMAC(
+                  algorithm=hashes.SHA256(),
+                  length=32,
+                  salt=salt,
+                  iterations=100000,
+                  backend=default_backend()
+              )
+              key = kdf.derive(password_bytes)
+
+              # Decrypt using AES-256-GCM
+              ciphertext_with_tag = encrypted_data + auth_tag
+              aesgcm = AESGCM(key)
+              try:
+                  decrypted = aesgcm.decrypt(iv, ciphertext_with_tag, None)
+                  decrypted_data = json.loads(decrypted.decode('utf-8'))
+
+                  # Write decrypted data
+                  with open(output_file, 'w') as f:
+                      json.dump(decrypted_data, f, indent=2)
+
+                  print(f"✓ Successfully decrypted to: {output_file}")
+                  print(f"\nFile size: {Path(output_file).stat().st_size} bytes")
+                  print("To use with this module:")
+                  print(f"  programs.raycast.configFile = ./{Path(output_file).name};")
+              except Exception as e:
+                  print(f"✗ Error: Decryption failed: {e}")
+                  print("\nPossible causes:")
+                  print("  - Wrong password")
+                  print("  - Corrupted encrypted data")
+                  sys.exit(1)
+          else:
+              # No encryption, data is already plain JSON
+              print("File is not encrypted (no encryption metadata found)")
+              if 'data' in config:
+                  print("⚠ Warning: File has 'data' field but no encryption metadata")
+                  print("This might be an unsupported format")
+
+              # Just write the config as-is
+              with open(output_file, 'w') as f:
+                  json.dump(config, f, indent=2)
+
+              print(f"✓ Successfully wrote to: {output_file}")
+              print(f"\nFile size: {Path(output_file).stat().st_size} bytes")
+              print("To use with this module:")
+              print(f"  programs.raycast.configFile = ./{Path(output_file).name};")
+          PYTHON
+
         '')
 
         # Encrypt script
