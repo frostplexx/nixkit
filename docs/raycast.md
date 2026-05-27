@@ -14,6 +14,7 @@ The module handles encryption, compression, and format conversion automatically,
 
 ## Features
 
+- Installs Raycast Beta (0.61.0.0) when module is enabled
 - Declarative configuration of Raycast preferences, snippets, and extensions
 - Import and export existing Raycast configurations
 - Automatic `.rayconfig` file generation with proper encryption
@@ -48,7 +49,7 @@ Add the nixkit flake to your Home Manager configuration and import the Raycast m
 
 ### Basic Configuration
 
-Enable the module and define basic preferences:
+Enable the module and define basic preferences. The module will automatically install Raycast Beta (0.61.0.0) to `/Applications/Raycast Beta.app`:
 
 ```nix
 programs.raycast = {
@@ -70,6 +71,12 @@ programs.raycast = {
     }
   ];
 };
+```
+
+**Note:** Raycast is unfree software. Ensure your NixOS configuration allows unfree packages:
+
+```nix
+nixpkgs.config.allowUnfree = true;
 ```
 
 ### Apply and Import

@@ -95,8 +95,10 @@ with lib; let
   # Determine the final config to use
   finalConfig =
     if cfg.configFile != null then
-      # Load from JSON file
-      builtins.fromJSON (builtins.readFile cfg.configFile)
+       let
+         content = builtins.readFile cfg.configFile;
+       in
+         builtins.fromJSON content
     else if cfg.settings != null then
       # Use provided attribute set directly
       cfg.settings
@@ -440,8 +442,9 @@ in {
         ''
       );
 
-      # Import script (only when module is enabled)
+      # Install Raycast Beta application and import script
       home.packages = [
+        pkgs.raycast-beta
         (pkgs.writeShellScriptBin "raycast-import-config" ''
           set -euo pipefail
 

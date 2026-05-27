@@ -24,6 +24,7 @@
         aerospace-swipe = pkgs.callPackage ./aerospace-swipe {};
         skhd_zig = pkgs.callPackage ./skhd_zig {};
         yabai = pkgs.callPackage ./yabai {};
+        raycast-beta = pkgs.callPackage ./raycast-beta {};
       }
       else {}
     )
