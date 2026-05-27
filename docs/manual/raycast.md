@@ -1,4 +1,4 @@
-# Raycast Configuration Module {#ch-raycast-config}
+# Raycast Configuration Module {#ch-raycast}
 
 A Home Manager module for declarative Raycast configuration management using Nix. This module generates native `.rayconfig` files that can be imported directly into Raycast, enabling reproducible configuration across machines.
 
