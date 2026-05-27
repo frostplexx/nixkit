@@ -336,7 +336,14 @@ in {
   config = mkMerge [
     # Always provide helper scripts (even when module is disabled)
     {
-      home.packages = [
+      home.packages = let
+        # Python environment with cryptography
+        pythonEnv = pkgs.python3.withPackages (ps: [ps.cryptography]);
+
+        # Standalone Python scripts
+        decryptScript = ./decrypt.py;
+        encryptScript = ./encrypt.py;
+      in [
         # Decrypt script (for inspecting encrypted configs)
         (pkgs.writeShellScriptBin "raycast-decrypt-config" ''
           set -euo pipefail
@@ -369,102 +376,9 @@ in {
 
           echo "Decrypting $INPUT_FILE..."
 
-          # Create a Python script to handle decryption
+          # Call standalone Python script
           # Raycast uses Scrypt (not PBKDF2) + AES-256-GCM + gzip compression
-          ${pkgs.python3.withPackages (ps: [ps.cryptography])}/bin/python3 - "$INPUT_FILE" "$PASSWORD" "$OUTPUT_FILE" <<'PYTHON'
-          import sys
-          import json
-          import gzip
-          from pathlib import Path
-
-          try:
-              from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-              from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
-              has_crypto = True
-          except ImportError:
-              has_crypto = False
-
-          input_file = sys.argv[1]
-          password = sys.argv[2]
-          output_file = sys.argv[3]
-
-          # Read and decompress the .rayconfig file
-          try:
-              with gzip.open(input_file, 'rt') as f:
-                  config = json.load(f)
-          except gzip.BadGzipFile:
-              # Already decompressed JSON
-              with open(input_file, 'r') as f:
-                  config = json.load(f)
-
-          # Check if data field is encrypted (has encryption metadata)
-          if 'encryption' in config and config.get('data'):
-              if not has_crypto:
-                  print("✗ Error: File is encrypted but cryptography module is not available")
-                  print("Install with: pip install cryptography")
-                  sys.exit(1)
-
-              if not password:
-                  print("✗ Error: File is encrypted but no password provided")
-                  sys.exit(1)
-
-              print("Decrypting data field (using Scrypt + AES-256-GCM)...")
-
-              try:
-                  # Extract encryption parameters
-                  enc = config['encryption']
-                  iv = bytes.fromhex(enc['iv'])
-                  salt = bytes.fromhex(enc['salt'])
-                  auth_tag = bytes.fromhex(enc['authTag'])
-                  encrypted_data = bytes.fromhex(config['data'])
-
-                  # Raycast uses Scrypt(N=16384, r=8, p=1) for key derivation
-                  key = Scrypt(salt=salt, length=32, n=16384, r=8, p=1).derive(password.encode())
-
-                  # Decrypt using AES-256-GCM
-                  ciphertext_with_tag = encrypted_data + auth_tag
-                  aesgcm = AESGCM(key)
-                  decrypted = aesgcm.decrypt(iv, ciphertext_with_tag, None)
-
-                  # Raycast gzips the data before encrypting
-                  try:
-                      plaintext = gzip.decompress(decrypted).decode('utf-8')
-                  except:
-                      plaintext = decrypted.decode('utf-8')
-
-                  # Parse and write the decrypted JSON
-                  decrypted_data = json.loads(plaintext)
-                  with open(output_file, 'w') as f:
-                      json.dump(decrypted_data, f, indent=2)
-
-                  print(f"✓ Successfully decrypted to: {output_file}")
-                  print(f"\nFile size: {Path(output_file).stat().st_size} bytes")
-                  print("To use with this module:")
-                  print(f"  programs.raycast.configFile = ./{Path(output_file).name};")
-
-              except Exception as e:
-                  print(f"✗ Error: Decryption failed: {e}")
-                  print("\nPossible causes:")
-                  print("  - Wrong password")
-                  print("  - Corrupted encrypted data")
-                  print("  - Unsupported encryption format")
-                  sys.exit(1)
-          else:
-              # No encryption, data is already plain JSON
-              print("File is not encrypted (no encryption metadata found)")
-              if 'data' in config:
-                  print("⚠ Warning: File has 'data' field but no encryption metadata")
-                  print("This might be an unsupported format")
-
-              # Just write the config as-is
-              with open(output_file, 'w') as f:
-                  json.dump(config, f, indent=2)
-
-              print(f"✓ Successfully wrote to: {output_file}")
-              print(f"\nFile size: {Path(output_file).stat().st_size} bytes")
-              print("To use with this module:")
-              print(f"  programs.raycast.configFile = ./{Path(output_file).name};")
-          PYTHON
+          exec ${pythonEnv}/bin/python3 ${decryptScript} "$INPUT_FILE" "$PASSWORD" "$OUTPUT_FILE"
 
         '')
 
@@ -498,43 +412,12 @@ in {
             exit 1
           fi
 
-          # Validate JSON
-          if ! ${pkgs.jq}/bin/jq empty "$INPUT_FILE" 2>/dev/null; then
-            echo "Error: Invalid JSON file"
-            exit 1
-          fi
-
           echo "Creating .rayconfig from $INPUT_FILE..."
 
-          if [ -z "$PASSWORD" ]; then
-            # Unencrypted: just gzip the JSON
-            echo "Creating unencrypted .rayconfig (gzipped only)..."
-            ${pkgs.gzip}/bin/gzip -c "$INPUT_FILE" > "$OUTPUT_FILE"
-            echo "✓ Successfully created: $OUTPUT_FILE (unencrypted)"
-          else
-            # Encrypted: gzip, add header, then encrypt with AES-256-CBC
-            echo "Creating encrypted .rayconfig with password..."
+          # Call standalone Python script
+          # Raycast uses Scrypt + AES-256-GCM + gzip compression
+          exec ${pythonEnv}/bin/python3 ${encryptScript} "$INPUT_FILE" "$PASSWORD" "$OUTPUT_FILE"
 
-            # Create a 16-byte header (Raycast format marker)
-            HEADER_FILE=$(mktemp)
-            printf '\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' > "$HEADER_FILE"
-
-            # Gzip the JSON, prepend header, then encrypt
-            cat "$INPUT_FILE" | ${pkgs.gzip}/bin/gzip | cat "$HEADER_FILE" - | \
-              ${pkgs.openssl}/bin/openssl enc -e -aes-256-cbc -nosalt -k "$PASSWORD" -out "$OUTPUT_FILE"
-
-            rm "$HEADER_FILE"
-            echo "✓ Successfully created: $OUTPUT_FILE (encrypted)"
-          fi
-
-          echo ""
-          echo "File size: $(wc -c < "$OUTPUT_FILE") bytes"
-          echo ""
-          echo "To import into Raycast:"
-          echo "  1. Open Raycast"
-          echo "  2. Go to Settings → Advanced"
-          echo "  3. Click 'Import Data'"
-          echo "  4. Select: $OUTPUT_FILE"
         '')
       ];
     }
