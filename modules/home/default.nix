@@ -4,5 +4,6 @@ _: {
     ./ndcli.nix
     ./aerospace-swipe.nix
     ./nixupdater.nix
+    ./raycast.nix
   ];
 }
