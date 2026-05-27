@@ -20,6 +20,10 @@ def build_rayconfig(config_json: str, password: str | None, output_file: str) ->
     with open(config_json, 'r') as f:
         config_data = json.load(f)
 
+    # Convert config to JSON and gzip it
+    config_bytes = json.dumps(config_data, separators=(',', ':')).encode('utf-8')
+    gzipped_data = gzip.compress(config_bytes)
+
     if password:
         print("Creating encrypted .rayconfig with password...")
 
@@ -27,15 +31,11 @@ def build_rayconfig(config_json: str, password: str | None, output_file: str) ->
         iv = os.urandom(12)  # AES-GCM uses 12-byte IV
         salt = os.urandom(16)
 
-        # Convert config to JSON and gzip it
-        config_bytes = json.dumps(config_data, separators=(',', ':')).encode('utf-8')
-        gzipped_data = gzip.compress(config_bytes)
-
         # Derive key using Scrypt (same parameters as Raycast)
         print("Deriving encryption key (Scrypt N=16384, r=8, p=1)...")
         key = Scrypt(salt=salt, length=32, n=16384, r=8, p=1).derive(password.encode())
 
-        # Encrypt with AES-256-GCM
+        # Encrypt the gzipped data with AES-256-GCM
         aesgcm = AESGCM(key)
         encrypted = aesgcm.encrypt(iv, gzipped_data, None)
 
@@ -45,39 +45,43 @@ def build_rayconfig(config_json: str, password: str | None, output_file: str) ->
         ciphertext = encrypted[:-auth_tag_len]
         auth_tag = encrypted[-auth_tag_len:]
 
-        # Build the wrapper JSON with encryption metadata
+        # Build the wrapper JSON with all metadata
         wrapper = {
+            "exportedAt": "2026-01-01T00:00:00.000Z",
+            "appVersion": "1.0.0",
+            "osName": "macOS",
+            "osVersion": "15.0.0",
+            "osArch": "arm64",
             "schemaVersion": 2,
+            "data": ciphertext.hex(),
             "encryption": {
-                "algorithm": "aes-256-gcm",
                 "iv": iv.hex(),
                 "salt": salt.hex(),
                 "authTag": auth_tag.hex()
-            },
-            "data": ciphertext.hex()
+            }
         }
-
-        # Gzip the wrapper JSON to create the .rayconfig file
-        wrapper_json = json.dumps(wrapper, separators=(',', ':')).encode('utf-8')
-        with gzip.open(output_file, 'wb') as f:
-            f.write(wrapper_json)
 
         print(f"✓ Successfully created encrypted .rayconfig: {output_file}")
     else:
-        print("Creating unencrypted .rayconfig (gzipped only)...")
+        print("Creating unencrypted .rayconfig...")
 
-        # For unencrypted, we still need the wrapper format but without encryption
+        # For unencrypted, the data field contains the gzipped config as hex
         wrapper = {
+            "exportedAt": "2026-01-01T00:00:00.000Z",
+            "appVersion": "1.0.0",
+            "osName": "macOS",
+            "osVersion": "15.0.0",
+            "osArch": "arm64",
             "schemaVersion": 2,
-            "data": json.dumps(config_data, separators=(',', ':'))
+            "data": gzipped_data.hex()
         }
 
-        # Gzip the wrapper JSON
-        wrapper_json = json.dumps(wrapper, separators=(',', ':')).encode('utf-8')
-        with gzip.open(output_file, 'wb') as f:
-            f.write(wrapper_json)
-
         print(f"✓ Successfully created unencrypted .rayconfig: {output_file}")
+
+    # Gzip the wrapper JSON to create the .rayconfig file
+    wrapper_json = json.dumps(wrapper, indent=2).encode('utf-8')
+    with gzip.open(output_file, 'wb') as f:
+        f.write(wrapper_json)
 
     file_size = Path(output_file).stat().st_size
     print(f"\nFile size: {file_size} bytes")

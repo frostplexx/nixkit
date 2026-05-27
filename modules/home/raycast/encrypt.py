@@ -26,32 +26,15 @@ def encrypt_rayconfig(input_file: str, password: str | None, output_file: str) -
 
     print(f"Creating .rayconfig from {input_file}...")
 
-    if not password:
-        # Unencrypted: wrap in schemaVersion 2 format and gzip
-        print("Creating unencrypted .rayconfig (gzipped only)...")
+    # Convert config to JSON and gzip it
+    config_bytes = json.dumps(data, separators=(',', ':')).encode('utf-8')
+    gzipped_data = gzip.compress(config_bytes)
 
-        # Build wrapper with data field (unencrypted)
-        wrapper = {
-            "schemaVersion": 2,
-            "data": json.dumps(data, separators=(',', ':'))
-        }
-
-        # Gzip the wrapper JSON
-        with gzip.open(output_file, 'wt') as f:
-            json.dump(wrapper, f, separators=(',', ':'))
-
-        print(f"✓ Successfully created: {output_file} (unencrypted)")
-    else:
-        # Encrypted: gzip, encrypt with Scrypt + AES-256-GCM
+    if password:
+        # Encrypted: gzip then encrypt with Scrypt + AES-256-GCM
         print("Creating encrypted .rayconfig with password...")
 
         try:
-            # Read and gzip the JSON
-            with open(input_file, 'r') as f:
-                json_data = f.read()
-
-            compressed = gzip.compress(json_data.encode('utf-8'))
-
             # Generate random IV and salt
             iv = secrets.token_bytes(12)  # AES-GCM uses 12-byte IV
             salt = secrets.token_bytes(16)
@@ -59,35 +42,55 @@ def encrypt_rayconfig(input_file: str, password: str | None, output_file: str) -
             # Derive key using Scrypt (same parameters as Raycast)
             key = Scrypt(salt=salt, length=32, n=16384, r=8, p=1).derive(password.encode())
 
-            # Encrypt using AES-256-GCM
+            # Encrypt the gzipped data using AES-256-GCM
             aesgcm = AESGCM(key)
-            ciphertext = aesgcm.encrypt(iv, compressed, None)
+            encrypted = aesgcm.encrypt(iv, gzipped_data, None)
 
             # Split ciphertext and auth tag (last 16 bytes)
-            encrypted_data = ciphertext[:-16]
-            auth_tag = ciphertext[-16:]
+            encrypted_data = encrypted[:-16]
+            auth_tag = encrypted[-16:]
 
-            # Build the config structure with encryption metadata
-            config = {
+            # Build the wrapper JSON with all metadata
+            wrapper = {
+                "exportedAt": "2026-01-01T00:00:00.000Z",
+                "appVersion": "1.0.0",
+                "osName": "macOS",
+                "osVersion": "15.0.0",
+                "osArch": "arm64",
                 "schemaVersion": 2,
+                "data": encrypted_data.hex(),
                 "encryption": {
-                    "algorithm": "aes-256-gcm",
                     "iv": iv.hex(),
                     "salt": salt.hex(),
                     "authTag": auth_tag.hex()
-                },
-                "data": encrypted_data.hex()
+                }
             }
-
-            # Write as gzipped JSON
-            with gzip.open(output_file, 'wt') as f:
-                json.dump(config, f)
 
             print(f"✓ Successfully created: {output_file} (encrypted)")
 
         except Exception as e:
             print(f"✗ Error: Encryption failed: {e}")
             sys.exit(1)
+    else:
+        # Unencrypted: data field contains gzipped config as hex
+        print("Creating unencrypted .rayconfig...")
+
+        wrapper = {
+            "exportedAt": "2026-01-01T00:00:00.000Z",
+            "appVersion": "1.0.0",
+            "osName": "macOS",
+            "osVersion": "15.0.0",
+            "osArch": "arm64",
+            "schemaVersion": 2,
+            "data": gzipped_data.hex()
+        }
+
+        print(f"✓ Successfully created: {output_file} (unencrypted)")
+
+    # Gzip the wrapper JSON to create the .rayconfig file
+    wrapper_json = json.dumps(wrapper, indent=2).encode('utf-8')
+    with gzip.open(output_file, 'wb') as f:
+        f.write(wrapper_json)
 
     print("")
     print(f"File size: {Path(output_file).stat().st_size} bytes")
