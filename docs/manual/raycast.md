@@ -2,7 +2,7 @@
 
 A Home Manager module for declarative Raycast configuration management using Nix. This module generates native `.rayconfig` files that can be imported directly into Raycast, enabling reproducible configuration across machines.
 
-## Overview
+## Overview {#raycast-overview}
 
 This module provides three approaches to managing Raycast configuration:
 
@@ -12,7 +12,7 @@ This module provides three approaches to managing Raycast configuration:
 
 The module handles encryption, compression, and format conversion automatically, producing `.rayconfig` files compatible with Raycast's native import functionality.
 
-## Features
+## Features {#raycast-features}
 
 - Installs Raycast Beta (0.61.0.0) when module is enabled
 - Declarative configuration of Raycast preferences, snippets, and extensions
@@ -23,7 +23,7 @@ The module handles encryption, compression, and format conversion automatically,
 - Automated import via AppleScript (macOS only)
 - No external dependencies beyond standard Nix tools
 
-## Installation
+## Installation {#raycast-installation}
 
 Add the nixkit flake to your Home Manager configuration and import the Raycast module:
 
@@ -45,9 +45,9 @@ Add the nixkit flake to your Home Manager configuration and import the Raycast m
 }
 ```
 
-## Quick Start
+## Quick Start {#raycast-quick-start}
 
-### Basic Configuration
+### Basic Configuration {#raycast-basic-config}
 
 Enable the module and define basic preferences. The module will automatically install Raycast Beta (0.61.0.0) to `/Applications/Raycast Beta.app`:
 
@@ -79,7 +79,7 @@ programs.raycast = {
 nixpkgs.config.allowUnfree = true;
 ```
 
-### Apply and Import
+### Apply and Import {#raycast-apply-import}
 
 After running `home-manager switch`, import the generated configuration:
 
@@ -93,9 +93,9 @@ raycast-import-config
 # 3. Select ~/.config/raycast/import.rayconfig
 ```
 
-## Configuration Methods
+## Configuration Methods {#raycast-config-methods}
 
-### Method 1: Declarative Configuration
+### Method 1: Declarative Configuration {#raycast-method-1}
 
 Define Raycast settings directly in Nix using structured options. This approach provides type safety and validation.
 
@@ -141,7 +141,7 @@ programs.raycast = {
 };
 ```
 
-### Method 2: Import from JSON File
+### Method 2: Import from JSON File {#raycast-method-2}
 
 Import an existing Raycast export. This is the recommended approach for migrating existing configurations.
 
@@ -155,7 +155,7 @@ programs.raycast = {
 };
 ```
 
-### Method 3: Attribute Set Import
+### Method 3: Attribute Set Import {#raycast-method-3}
 
 Use Nix expressions to load and manipulate configuration programmatically.
 
@@ -167,7 +167,7 @@ programs.raycast = {
 };
 ```
 
-### Advanced Configuration
+### Advanced Configuration {#raycast-advanced-config}
 
 Extend the configuration with custom package settings:
 
@@ -189,11 +189,11 @@ programs.raycast = {
 };
 ```
 
-## Command-Line Utilities
+## Command-Line Utilities {#raycast-cli-utils}
 
 The module provides several command-line utilities for working with `.rayconfig` files. The decrypt and encrypt utilities are always available, even when the module is disabled.
 
-### raycast-decrypt-config
+### raycast-decrypt-config {#raycast-decrypt-config}
 
 Decrypt and inspect `.rayconfig` files.
 
@@ -216,7 +216,7 @@ raycast-decrypt-config export.rayconfig "" output.json
 
 The decrypted JSON can be used with `configFile` or modified and re-imported.
 
-### raycast-encrypt-config
+### raycast-encrypt-config {#raycast-encrypt-config}
 
 Create `.rayconfig` files from JSON configuration.
 
@@ -237,7 +237,7 @@ raycast-encrypt-config config.json your-password
 raycast-encrypt-config config.json password output.rayconfig
 ```
 
-### raycast-import-config
+### raycast-import-config {#raycast-import-config}
 
 Automate the Raycast import process using AppleScript. Available only when the module is enabled.
 
@@ -268,18 +268,18 @@ programs.raycast = {
 - `"command down"` - Cmd+Space
 - `"control down"` - Ctrl+Space
 
-## Exporting Existing Configuration
+## Exporting Existing Configuration {#raycast-exporting}
 
 To migrate your current Raycast configuration to this module:
 
-### Step 1: Export from Raycast
+### Step 1: Export from Raycast {#raycast-export-step-1}
 
 1. Open Raycast
 2. Search for "Export Settings & Data"
 3. Choose whether to encrypt (optional, recommended for sensitive data)
 4. Save the `.rayconfig` file
 
-### Step 2: Decrypt the Export
+### Step 2: Decrypt the Export {#raycast-export-step-2}
 
 Convert the `.rayconfig` file to JSON:
 
@@ -289,7 +289,7 @@ raycast-decrypt-config ~/Downloads/Raycast-2026-05-27.rayconfig [password]
 
 This produces `Raycast-2026-05-27.json` containing the configuration data.
 
-### Step 3: Import to Nix
+### Step 3: Import to Nix {#raycast-export-step-3}
 
 Reference the decrypted JSON in your configuration:
 
@@ -312,43 +312,43 @@ programs.raycast = {
 };
 ```
 
-## Module Options Reference
+## Module Options Reference {#raycast-options}
 
-### Core Options
+### Core Options {#raycast-core-options}
 
-#### `programs.raycast.enable`
+#### `programs.raycast.enable` {#opt-raycast-enable}
 
 - **Type:** `boolean`
 - **Default:** `false`
 
 Enable Raycast configuration management. When enabled, the module generates a `.rayconfig` file at the specified output path.
 
-#### `programs.raycast.version`
+#### `programs.raycast.version` {#opt-raycast-version}
 
 - **Type:** `string`
 - **Default:** `"1.0.0"`
 
 Raycast version string included in the generated configuration metadata.
 
-#### `programs.raycast.installationDate`
+#### `programs.raycast.installationDate` {#opt-raycast-installation-date}
 
 - **Type:** `string`
 - **Default:** `"2024-01-01T00:00:00Z"`
 
 Installation timestamp in ISO 8601 format.
 
-#### `programs.raycast.anonymousId`
+#### `programs.raycast.anonymousId` {#opt-raycast-anonymous-id}
 
 - **Type:** `string`
 - **Default:** `"00000000-0000-0000-0000-000000000000"`
 
 Anonymous identifier (UUID format).
 
-### Configuration Sources
+### Configuration Sources {#raycast-config-sources}
 
 These options are mutually exclusive, with priority order: `configFile` > `settings` > declarative options.
 
-#### `programs.raycast.configFile`
+#### `programs.raycast.configFile` {#opt-raycast-config-file}
 
 - **Type:** `null or path`
 - **Default:** `null`
@@ -356,16 +356,16 @@ These options are mutually exclusive, with priority order: `configFile` > `setti
 
 Path to a JSON file containing complete Raycast configuration. This is the recommended approach for importing existing configurations.
 
-#### `programs.raycast.settings`
+#### `programs.raycast.settings` {#opt-raycast-settings}
 
 - **Type:** `null or attribute set`
 - **Default:** `null`
 
 Complete Raycast configuration as a Nix attribute set. Use this when you need to programmatically manipulate configuration.
 
-### Declarative Options
+### Declarative Options {#raycast-declarative-options}
 
-#### `programs.raycast.preferences`
+#### `programs.raycast.preferences` {#opt-raycast-preferences}
 
 - **Type:** `attribute set`
 - **Default:** `{}`
@@ -388,7 +388,7 @@ Structured Raycast preferences organized into three categories:
 - `popToRootTimeout` (integer): Timeout in seconds
 - `keepWindowVisibleOnResign` (boolean)
 
-#### `programs.raycast.snippets`
+#### `programs.raycast.snippets` {#opt-raycast-snippets}
 
 - **Type:** `list of attribute sets`
 - **Default:** `[]`
@@ -398,62 +398,62 @@ Text snippets configuration. Each snippet requires:
 - `text` (string): Snippet content
 - `keyword` (string): Trigger keyword
 
-#### `programs.raycast.fallbackSearches`
+#### `programs.raycast.fallbackSearches` {#opt-raycast-fallback-searches}
 
 - **Type:** `list of strings`
 - **Default:** (includes file search, emoji search, etc.)
 
 List of enabled fallback search identifiers.
 
-#### `programs.raycast.installedExtensions`
+#### `programs.raycast.installedExtensions` {#opt-raycast-installed-extensions}
 
 - **Type:** `list of strings`
 - **Default:** `[]`
 
 Native extension identifiers to mark as installed.
 
-#### `programs.raycast.floatingNotes`
+#### `programs.raycast.floatingNotes` {#opt-raycast-floating-notes}
 
 - **Type:** `list of attribute sets`
 - **Default:** `[]`
 
 Floating notes configuration.
 
-#### `programs.raycast.extraConfig`
+#### `programs.raycast.extraConfig` {#opt-raycast-extra-config}
 
 - **Type:** `attribute set`
 - **Default:** `{}`
 
 Additional configuration merged into the generated JSON. Use this for package-specific settings not covered by other options.
 
-### Security Options
+### Security Options {#raycast-security-options}
 
-#### `programs.raycast.encryptionPassword`
+#### `programs.raycast.encryptionPassword` {#opt-raycast-encryption-password}
 
 - **Type:** `null or string`
 - **Default:** `null`
 
 Password for encrypting the `.rayconfig` file using Scrypt + AES-256-GCM. When null, the file is generated unencrypted (gzip only).
 
-### Automation Options
+### Automation Options {#raycast-automation-options}
 
-#### `programs.raycast.automationHotkey`
+#### `programs.raycast.automationHotkey` {#opt-raycast-automation-hotkey}
 
 - **Type:** `string`
 - **Default:** `"option down"`
 
 AppleScript key modifier for automated import. Must match your Raycast global hotkey configuration.
 
-#### `programs.raycast.outputPath`
+#### `programs.raycast.outputPath` {#opt-raycast-output-path}
 
 - **Type:** `string`
 - **Default:** `"$HOME/.config/raycast/import.rayconfig"`
 
 Output path for the generated `.rayconfig` file.
 
-## Technical Specification
+## Technical Specification {#raycast-tech-spec}
 
-### File Format
+### File Format {#raycast-file-format}
 
 The `.rayconfig` file is a gzipped JSON file with the following structure:
 
@@ -474,7 +474,7 @@ The `.rayconfig` file is a gzipped JSON file with the following structure:
 }
 ```
 
-### Encryption Process
+### Encryption Process {#raycast-encryption-process}
 
 When encryption is enabled:
 
@@ -492,7 +492,7 @@ When encryption is enabled:
 5. **Wrap:** Metadata wrapper JSON is created
 6. **Compress:** Final JSON is gzipped to produce `.rayconfig`
 
-### Unencrypted Format
+### Unencrypted Format {#raycast-unencrypted-format}
 
 For unencrypted configurations:
 
@@ -502,9 +502,9 @@ For unencrypted configurations:
 
 Both encrypted and unencrypted `.rayconfig` files can be imported by Raycast.
 
-## Troubleshooting
+## Troubleshooting {#raycast-troubleshooting}
 
-### Build Failures
+### Build Failures {#raycast-build-failures}
 
 **Module not found or import errors**
 
@@ -518,7 +518,7 @@ imports = [ nixkit.homeManagerModules.default ];
 
 The module requires Python 3 with the `cryptography` library. This is automatically provided by Nix and should not require manual intervention.
 
-### Import Issues
+### Import Issues {#raycast-import-issues}
 
 **Automated import not working**
 
@@ -559,7 +559,7 @@ If Raycast reports a decryption error:
 
 3. Regenerate the configuration with `home-manager switch`
 
-### Decryption Errors
+### Decryption Errors {#raycast-decryption-errors}
 
 **Wrong password**
 
@@ -577,7 +577,7 @@ Verify the file is valid gzipped JSON:
 gunzip -c export.rayconfig | jq empty
 ```
 
-### Configuration Issues
+### Configuration Issues {#raycast-config-issues}
 
 **Settings not applying**
 
@@ -595,9 +595,9 @@ The `encryptionPassword` option stores the password in the Nix store, which is w
 - Managing secrets with a dedicated secrets management solution
 - Understanding that the encryption primarily protects the file at rest, not in the Nix store
 
-## Security Considerations
+## Security Considerations {#raycast-security-considerations}
 
-### Password Storage
+### Password Storage {#raycast-password-storage}
 
 The `encryptionPassword` option stores passwords in the Nix store, which is world-readable. This presents several security implications:
 
@@ -611,7 +611,7 @@ The `encryptionPassword` option stores passwords in the Nix store, which is worl
 2. **Use secrets management** solutions like sops-nix or agenix for production environments
 3. **Understand the threat model:** The encryption primarily protects exported files, not the configuration source
 
-### Sensitive Data
+### Sensitive Data {#raycast-sensitive-data}
 
 Raycast configurations may contain:
 
@@ -622,19 +622,19 @@ Raycast configurations may contain:
 
 Review your configuration before committing it to version control or sharing publicly.
 
-## Related Projects
+## Related Projects {#raycast-related-projects}
 
 - [nixkit](https://github.com/frostplexx/nixkit) - NixOS modules collection containing this module
 - [Home Manager](https://github.com/nix-community/home-manager) - User environment manager for NixOS
 - [Raycast](https://raycast.com/) - Extensible macOS launcher
 
-## References
+## References {#raycast-references}
 
 - [Raycast Manual](https://manual.raycast.com/) - Official Raycast documentation
 - [Import/Export Format Analysis](https://gist.github.com/jeremy-code/50117d5b4f29e04fcbbb1f55e301b893) - Community reverse-engineering of `.rayconfig` format
 - [Home Manager Manual](https://nix-community.github.io/home-manager/) - Home Manager documentation
 
-## Contributing
+## Contributing {#raycast-contributing}
 
 Issues and pull requests are welcome at the [nixkit repository](https://github.com/frostplexx/nixkit). When reporting issues, please include:
 
@@ -643,6 +643,5 @@ Issues and pull requests are welcome at the [nixkit repository](https://github.c
 - Error messages or unexpected behavior
 - Steps to reproduce
 
-## License
-
+## License {#raycast-license}
 This module is part of nixkit. See the main repository for license information.
