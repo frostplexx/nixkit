@@ -115,6 +115,7 @@
             --replace-fail '@NIXKIT_VERSION@' "${nixkitVersion.release}" \
             --replace-fail '@NIXKIT_OPTIONS_JSON@' ${optionsJSON}/share/doc/nixkit/options.json
           cp ${./docs/manual/known-issues.md} $out/known-issues.md
+          cp ${./docs/manual/raycast.md} $out/raycast.md
         '';
 
         manualHTML = let
