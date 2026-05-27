@@ -27,11 +27,19 @@ def encrypt_rayconfig(input_file: str, password: str | None, output_file: str) -
     print(f"Creating .rayconfig from {input_file}...")
 
     if not password:
-        # Unencrypted: just gzip the JSON
+        # Unencrypted: wrap in schemaVersion 2 format and gzip
         print("Creating unencrypted .rayconfig (gzipped only)...")
-        with open(input_file, 'rb') as f_in:
-            with gzip.open(output_file, 'wb') as f_out:
-                f_out.write(f_in.read())
+
+        # Build wrapper with data field (unencrypted)
+        wrapper = {
+            "schemaVersion": 2,
+            "data": json.dumps(data, separators=(',', ':'))
+        }
+
+        # Gzip the wrapper JSON
+        with gzip.open(output_file, 'wt') as f:
+            json.dump(wrapper, f, separators=(',', ':'))
+
         print(f"✓ Successfully created: {output_file} (unencrypted)")
     else:
         # Encrypted: gzip, encrypt with Scrypt + AES-256-GCM
@@ -45,7 +53,7 @@ def encrypt_rayconfig(input_file: str, password: str | None, output_file: str) -
             compressed = gzip.compress(json_data.encode('utf-8'))
 
             # Generate random IV and salt
-            iv = secrets.token_bytes(16)
+            iv = secrets.token_bytes(12)  # AES-GCM uses 12-byte IV
             salt = secrets.token_bytes(16)
 
             # Derive key using Scrypt (same parameters as Raycast)
@@ -59,20 +67,16 @@ def encrypt_rayconfig(input_file: str, password: str | None, output_file: str) -
             encrypted_data = ciphertext[:-16]
             auth_tag = ciphertext[-16:]
 
-            # Build the config structure
+            # Build the config structure with encryption metadata
             config = {
-                "exportedAt": "2026-01-01T00:00:00.000Z",
-                "appVersion": "1.0.0",
-                "osName": "macOS",
-                "osVersion": "15.0.0",
-                "osArch": "arm64",
                 "schemaVersion": 2,
-                "data": encrypted_data.hex(),
                 "encryption": {
+                    "algorithm": "aes-256-gcm",
                     "iv": iv.hex(),
                     "salt": salt.hex(),
                     "authTag": auth_tag.hex()
-                }
+                },
+                "data": encrypted_data.hex()
             }
 
             # Write as gzipped JSON
