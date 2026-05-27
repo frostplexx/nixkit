@@ -370,6 +370,7 @@ in {
           echo "Decrypting $INPUT_FILE..."
 
           # Create a Python script to handle decryption
+          # Raycast uses Scrypt (not PBKDF2) + AES-256-GCM + gzip compression
           ${pkgs.python3.withPackages (ps: [ps.cryptography])}/bin/python3 - "$INPUT_FILE" "$PASSWORD" "$OUTPUT_FILE" <<'PYTHON'
           import sys
           import json
@@ -378,9 +379,7 @@ in {
 
           try:
               from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-              from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-              from cryptography.hazmat.primitives import hashes
-              from cryptography.hazmat.backends import default_backend
+              from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
               has_crypto = True
           except ImportError:
               has_crypto = False
@@ -409,33 +408,32 @@ in {
                   print("✗ Error: File is encrypted but no password provided")
                   sys.exit(1)
 
-              print("Decrypting data field...")
+              print("Decrypting data field (using Scrypt + AES-256-GCM)...")
 
-              # Extract encryption parameters
-              password_bytes = password.encode('utf-8')
-              iv = bytes.fromhex(config['encryption']['iv'])
-              salt = bytes.fromhex(config['encryption']['salt'])
-              auth_tag = bytes.fromhex(config['encryption']['authTag'])
-              encrypted_data = bytes.fromhex(config['data'])
-
-              # Derive key from password and salt using PBKDF2
-              kdf = PBKDF2HMAC(
-                  algorithm=hashes.SHA256(),
-                  length=32,
-                  salt=salt,
-                  iterations=100000,
-                  backend=default_backend()
-              )
-              key = kdf.derive(password_bytes)
-
-              # Decrypt using AES-256-GCM
-              ciphertext_with_tag = encrypted_data + auth_tag
-              aesgcm = AESGCM(key)
               try:
-                  decrypted = aesgcm.decrypt(iv, ciphertext_with_tag, None)
-                  decrypted_data = json.loads(decrypted.decode('utf-8'))
+                  # Extract encryption parameters
+                  enc = config['encryption']
+                  iv = bytes.fromhex(enc['iv'])
+                  salt = bytes.fromhex(enc['salt'])
+                  auth_tag = bytes.fromhex(enc['authTag'])
+                  encrypted_data = bytes.fromhex(config['data'])
 
-                  # Write decrypted data
+                  # Raycast uses Scrypt(N=16384, r=8, p=1) for key derivation
+                  key = Scrypt(salt=salt, length=32, n=16384, r=8, p=1).derive(password.encode())
+
+                  # Decrypt using AES-256-GCM
+                  ciphertext_with_tag = encrypted_data + auth_tag
+                  aesgcm = AESGCM(key)
+                  decrypted = aesgcm.decrypt(iv, ciphertext_with_tag, None)
+
+                  # Raycast gzips the data before encrypting
+                  try:
+                      plaintext = gzip.decompress(decrypted).decode('utf-8')
+                  except:
+                      plaintext = decrypted.decode('utf-8')
+
+                  # Parse and write the decrypted JSON
+                  decrypted_data = json.loads(plaintext)
                   with open(output_file, 'w') as f:
                       json.dump(decrypted_data, f, indent=2)
 
@@ -443,11 +441,13 @@ in {
                   print(f"\nFile size: {Path(output_file).stat().st_size} bytes")
                   print("To use with this module:")
                   print(f"  programs.raycast.configFile = ./{Path(output_file).name};")
+
               except Exception as e:
                   print(f"✗ Error: Decryption failed: {e}")
                   print("\nPossible causes:")
                   print("  - Wrong password")
                   print("  - Corrupted encrypted data")
+                  print("  - Unsupported encryption format")
                   sys.exit(1)
           else:
               # No encryption, data is already plain JSON
