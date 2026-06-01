@@ -4,6 +4,13 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
+    # zen-browser pins Rust 1.90 exactly; nixpkgs's current rustc would fail vendored
+    # encoding_rs in Firefox 150. rust-overlay lets the zen-browser package pick the
+    # exact toolchain version.
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {flake-parts, ...}:
@@ -22,7 +29,15 @@
       }: let
         isLinux = system == "x86_64-linux" || system == "aarch64-linux";
 
-        nixkitPackages = import ./packages {inherit pkgs system;};
+        # Extend pkgs with rust-overlay so packages that need a specific Rust
+        # toolchain (currently: zen-browser, pinned to 1.90) can take `rust-bin`
+        # via callPackage without each one importing the overlay itself.
+        pkgsWithRust = pkgs.extend inputs.rust-overlay.overlays.default;
+
+        nixkitPackages = import ./packages {
+          pkgs = pkgsWithRust;
+          inherit system;
+        };
 
         allModules =
           [(import ./modules/home {})]
