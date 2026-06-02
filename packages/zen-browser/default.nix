@@ -359,6 +359,16 @@ in
         fi
       done
 
+      # Force zen-new-little-window off the zenGlobal path. The PR routes this
+      # shortcut through the new Cocoa global-shortcut C++ layer (incomplete on
+      # darwin — key registration doesn't fire). With zenGlobal=false it goes
+      # through the regular XUL keybinding instead, which works.
+      # --replace-fail intentional: if upstream finishes the global path and
+      # changes this syntax, build fails loudly and we re-evaluate.
+      substituteInPlace src/zen/kbs/ZenKeyboardShortcuts.sys.mjs \
+        --replace-fail '/*zenGlobal=*/ true' '/*zenGlobal=*/ false' \
+        --replace-fail 'shortcut._setZenGlobal(true)' 'shortcut._setZenGlobal(false)'
+
       echo "==> Importing patches"
       npm run import -- --verbose
 
