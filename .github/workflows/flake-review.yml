@@ -14,9 +14,12 @@ permissions:
 
 jobs:
   review:
-    uses: ojsef39/flake-review/.github/workflows/flake-review-reusable.yml@0.3.0
+    uses: ojsef39/flake-review/.github/workflows/flake-review-reusable.yml@0.4.0
     with:
       # https://github.com/ojsef39/flake-review/blob/main/.github/workflows/flake-review-reusable.yml
       concurrency-group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-      flake-review-ref: "0.3.0"
+      flake-review-ref: "0.4.0"
       matrix: '[{"runner":"macos-latest","systems":"aarch64-darwin","name":"darwin"},{"runner":"ubuntu-latest","systems":"x86_64-linux","name":"linux"}]'
+      cachix-cache: nixkit
+    secrets:
+      cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
