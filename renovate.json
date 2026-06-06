@@ -8,7 +8,7 @@
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": ["/^\\.github/workflows/flake-review\\.yml$/"],
+      "managerFilePatterns": ["/^\\.github/workflows/flake-review-(build|comment)\\.yml$/"],
       "matchStrings": ["flake-review-ref: \"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "ojsef39/flake-review",
       "datasourceTemplate": "github-tags"

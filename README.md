@@ -70,6 +70,19 @@ nix profile install github:frostplexx/nixkit#ndcli
 nix run github:frostplexx/nixkit#opsops
 ```
 
+## 📦 Binary Cache
+
+CI pushes builds to [nixkit.cachix.org](https://app.cachix.org/cache/nixkit). Add it as a substituter to pull packages instead of building them:
+
+```nix
+nix.settings = {
+    substituters = [ "https://nixkit.cachix.org" ];
+    trusted-public-keys = [ "nixkit.cachix.org-1:d3yhZjbGSL6QTgzZsxE3lRLIQ8jGmH7/XxiD/5hGmfA=" ];
+};
+```
+
+Or with the cachix CLI: `cachix use nixkit`
+
 ## 🤖 Automated Updates
 
 The repository includes automated package updates via GitHub Actions:
