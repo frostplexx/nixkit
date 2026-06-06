@@ -22,7 +22,16 @@
       }: let
         isLinux = system == "x86_64-linux" || system == "aarch64-linux";
 
-        nixkitPackages = import ./packages {inherit pkgs system;};
+        unfreePkgs = import inputs.nixpkgs {
+          inherit system;
+          config.allowUnfreePredicate = pkg:
+            builtins.elem (inputs.nixpkgs.lib.getName pkg) ["raycast-beta"];
+        };
+
+        nixkitPackages = import ./packages {
+          pkgs = unfreePkgs;
+          inherit system;
+        };
 
         allModules =
           [(import ./modules/home {})]

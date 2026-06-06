@@ -14,6 +14,15 @@
       "datasourceTemplate": "github-tags"
     }
   ],
+  "customDatasources": {
+    "raycast-beta": {
+      "defaultRegistryUrlTemplate": "https://x.raycast-releases.com/releases/latest?platform=macos&architecture=arm64&version=0.0.0.0",
+      "format": "json",
+      "transformTemplates": [
+        "{ \"releases\": [{ \"version\": $.version, \"downloadUrl\": $.download_url }] }"
+      ]
+    }
+  },
   "packageRules": [
     {
       "matchPackageNames": ["ojsef39/flake-review"],

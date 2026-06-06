@@ -3,13 +3,14 @@
   stdenvNoCC,
   fetchurl,
   undmg,
+  nix-update-script,
 }:
-stdenvNoCC.mkDerivation (finalAttrs: {
+stdenvNoCC.mkDerivation (_finalAttrs: {
   pname = "raycast-beta";
   version = "0.61.0.0";
 
   src = fetchurl {
-    url = "https://x-r2.raycast-releases.com/Raycast_Beta_${finalAttrs.version}_e863712be6_arm64.dmg";
+    url = "https://x-r2.raycast-releases.com/Raycast_Beta_0.61.0.0_e863712be6_arm64.dmg";
     hash = "sha256-hNlsUjf89TMvSiDk4nv8Lt7HWwPQ5/I1JYXEUpleZF4=";
   };
 
@@ -25,6 +26,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  passthru = {
+    updateScript = nix-update-script {};
+    renovate.datasource = "custom.raycast-beta";
+  };
 
   meta = {
     description = "Control your tools with a few keystrokes - beta release";
