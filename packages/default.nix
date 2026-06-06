@@ -25,6 +25,7 @@
         skhd_zig = pkgs.callPackage ./skhd_zig {};
         yabai = pkgs.callPackage ./yabai {};
         raycast-beta = pkgs.callPackage ./raycast-beta {};
+        podman-mac-helper = pkgs.callPackage ./podman-mac-helper {};
       }
       else {}
     )
