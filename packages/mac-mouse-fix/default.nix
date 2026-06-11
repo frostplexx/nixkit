@@ -1,5 +1,6 @@
 {
   fetchFromGitHub,
+  fetchpatch,
   lib,
   nix-update-script,
   stdenv,
@@ -15,6 +16,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-+YETgkmSb1eiAj88Y9wFTQ2eiFxsuFEjkFZYeXjra5k=";
     fetchSubmodules = false;
   };
+
+  # Fix Spaces & Mission Control click-and-drag on macOS 26+ (PR #1875, fixes #1871).
+  patches = [
+    (fetchpatch {
+      name = "mmf-macos26-mission-control-drag.patch";
+      url = "https://github.com/noah-nuebling/mac-mouse-fix/pull/1875.diff";
+      hash = "sha256-6L44EH89NiSRtCF+GWBrDGGNZTTCJlKtsmi99eQWoQ0=";
+    })
+  ];
 
   __noChroot = true;
 
