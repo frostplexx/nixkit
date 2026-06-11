@@ -14,6 +14,7 @@
     {
       prometheus-mcp-server = pkgs.callPackage ./prometheus-mcp-server {};
       kubernetes-mcp-server = pkgs.callPackage ./kubernetes-mcp-server {};
+      nvim-99 = pkgs.callPackage ./nvim-99 {};
     }
     // (
       if isDarwin

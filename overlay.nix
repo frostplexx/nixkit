@@ -14,6 +14,6 @@ in
     vimPlugins =
       prev.vimPlugins
       // {
-        inherit (packages) prlsp-nvim;
+        inherit (packages) prlsp-nvim nvim-99;
       };
   }
