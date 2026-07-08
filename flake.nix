@@ -199,8 +199,7 @@
                                       --stylesheet highlightjs/mono-blue.css \
                                       --script ./highlightjs/highlight.pack.js \
                                       --script ./highlightjs/loader.js \
-                                      --toc-depth 1 \
-                                      --chunk-toc-depth 1 \
+                                      --sidebar-depth 1 \
                                       ${manualSrc}/manual.md \
                                       $dst/index.html
 
