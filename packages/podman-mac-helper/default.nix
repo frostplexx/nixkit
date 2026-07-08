@@ -7,13 +7,13 @@
 }:
 buildGoModule rec {
   pname = "podman-mac-helper";
-  version = "5.8.4";
+  version = "5.8.5";
 
   src = fetchFromGitHub {
     owner = "containers";
     repo = "podman";
     rev = "v${version}";
-    sha256 = "sha256-zhEtMZVKiv1L72EMlwgz8sHpmvhejGp98oW63aPj+rQ=";
+    sha256 = "sha256-LA1iY/u8gtBRuLCo60gQluoLxFR5KFSBbo8HJSFuZlE=";
   };
 
   subPackages = ["cmd/podman-mac-helper"];
