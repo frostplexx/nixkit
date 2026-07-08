@@ -189,6 +189,14 @@
                                     dst=$out/share/doc/nixkit
                                     mkdir -p $dst
                                     cp $styles/style.css $dst
+                                    chmod +w $dst/style.css
+                                    cat >> $dst/style.css <<'CSS'
+/* nixkit: make system colors (Canvas, scrollbars) follow dark mode and
+   pin the popover sidebar background to the theme background so it does
+   not render as a white block in dark mode. */
+:root { color-scheme: light dark; }
+nav.toc-sidebar { background: var(--background); }
+CSS
                                     cp -r ${pkgs.documentation-highlighter} $dst/highlightjs
 
                                     nixos-render-docs -j $NIX_BUILD_CORES manual html \
