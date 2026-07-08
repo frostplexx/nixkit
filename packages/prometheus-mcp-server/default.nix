@@ -18,18 +18,6 @@
     doCheck = false;
   };
 
-  griffelib = python3Packages.buildPythonPackage rec {
-    pname = "griffelib";
-    version = "2.0.0";
-    pyproject = true;
-    src = fetchPypi {
-      inherit pname version;
-      sha256 = "sha256-5QTWN6CJ9cq5tdrxj3ZFlwUJv09T7ajXntcczovZeTQ=";
-    };
-    nativeBuildInputs = with python3Packages; [pdm-backend uv-dynamic-versioning];
-    doCheck = false;
-  };
-
   py-key-value-aio = python3Packages.py-key-value-aio.overridePythonAttrs (_: rec {
     version = "0.4.4";
     src = fetchPypi {
@@ -57,7 +45,6 @@
     propagatedBuildInputs =
       (old.propagatedBuildInputs or [])
       ++ [
-        griffelib
         py-key-value-aio
         python3Packages.uncalled-for
         python3Packages.watchfiles
