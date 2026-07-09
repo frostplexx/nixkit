@@ -71,6 +71,7 @@ stdenv.mkDerivation (finalAttrs: {
       -packageCachePath "$TMPDIR/spm-cache" \
       ARCHS=arm64 \
       ONLY_ACTIVE_ARCH=YES \
+      MACOSX_DEPLOYMENT_TARGET=12.0 \
       CLANG_MODULE_CACHE_PATH="$TMPDIR/ModuleCache" \
       CODE_SIGN_IDENTITY=- \
       CODE_SIGN_STYLE=Manual \
