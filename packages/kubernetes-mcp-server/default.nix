@@ -6,16 +6,16 @@
 }:
 buildGoModule rec {
   pname = "kubernetes-mcp-server";
-  version = "0.0.63";
+  version = "0.0.64";
 
   src = fetchFromGitHub {
     owner = "containers";
     repo = "kubernetes-mcp-server";
     rev = "v${version}";
-    hash = "sha256-38hr1u1fVgiJ5AkhBhmQj/+CVfbjnHhb0k0lP9bKo4M=";
+    hash = "sha256-tQAgYr6AGaHUsBb0/LJBT/LuJVX6Ju5WpNcRzv7c7ns=";
   };
 
-  vendorHash = "sha256-ClcG+aGtj6Ey99ErT5OCGGusDR7aXwESLyXHWrxG8Lk=";
+  vendorHash = "sha256-ddR/LQuldt+gHkUe3wqyrFMtUaN7dfBkDkThHxLmlYM=";
 
   subPackages = ["cmd/kubernetes-mcp-server"];
 
