@@ -2,7 +2,7 @@
   lib,
   stdenvNoCC,
   fetchurl,
-  undmg,
+  unzip,
   nix-update-script,
 }:
 stdenvNoCC.mkDerivation (_finalAttrs: {
@@ -10,11 +10,11 @@ stdenvNoCC.mkDerivation (_finalAttrs: {
   version = "tip";
 
   src = fetchurl {
-    url = "https://github.com/ghostty-org/ghostty/releases/download/tip/Ghostty.dmg";
-    hash = "sha256-qPDFXXRrXMXRhRw+F14Sy/nx/fk20NkR7VQn/+a+2gQ=";
+    url = "https://github.com/ghostty-org/ghostty/releases/download/tip/ghostty-macos-universal.zip";
+    hash = "sha256-Tde/5vdvVgUVFAVqnnNNLLWVtd0wPZPZc1LB7GYRiMw=";
   };
 
-  nativeBuildInputs = [undmg];
+  nativeBuildInputs = [unzip];
 
   sourceRoot = "Ghostty.app";
 
