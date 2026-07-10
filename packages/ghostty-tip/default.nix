@@ -28,8 +28,9 @@ stdenvNoCC.mkDerivation (_finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script {};
-    renovate.datasource = "custom.ghostty-tip";
+    updateScript = nix-update-script {
+      extraArgs = ["--version=skip"];
+    };
   };
 
   meta = {
