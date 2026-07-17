@@ -5,6 +5,7 @@
   fetchpatch,
   apple-sdk_15,
   installShellFiles,
+  llvmPackages,
   versionCheckHook,
   xxd,
 }:
@@ -37,11 +38,16 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     installShellFiles
     xxd
+    # Work around cctools ld64 SIGTRAP on the final link (nixpkgs regression);
+    # link with LLVM lld instead. Mirrors nixpkgs commit 0125c38.
+    llvmPackages.lld
   ];
 
   buildInputs = [
     apple-sdk_15
   ];
+
+  env.NIX_CFLAGS_LINK = "-fuse-ld=lld";
 
   dontConfigure = true;
   enableParallelBuilding = false;
