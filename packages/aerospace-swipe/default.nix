@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  llvmPackages,
   nix-update-script,
   ...
 }:
@@ -15,6 +16,14 @@ stdenv.mkDerivation {
     hash = "sha256-0SvEebMAiD7+7bGow2EeSyKuwO3qoA0YNWm1UcNkYM4=";
     rev = "fc3db8757558956e8fe1496cff3e6a9a1b1748ac";
   };
+
+  nativeBuildInputs = [
+    # Work around cctools ld64 SIGTRAP on the final link (nixpkgs regression);
+    # link with LLVM lld instead. Mirrors the yabai package fix.
+    llvmPackages.lld
+  ];
+
+  env.NIX_CFLAGS_LINK = "-fuse-ld=lld";
 
   postPatch = ''
     # Fix compatibility with older SDK versions
