@@ -4,7 +4,7 @@
   pkgs,
   nix-update-script,
 }: let
-  version = "0.1.10";
+  version = "0.1.11";
 in
   stdenv.mkDerivation {
     pname = "skhd_zig";
@@ -12,7 +12,7 @@ in
 
     src = pkgs.fetchurl {
       url = "https://github.com/jackielii/skhd.zig/releases/download/v${version}/skhd-arm64-macos.tar.gz";
-      hash = "sha256-eU8I5HRpiag5zXd8B7zxE07SyukXxqMESVRBxBrm16Y=";
+      hash = "sha256-u8k4uU4cGltaApVLTB+or666chvkZ0yZI39zE1WGzaQ=";
     };
 
     sourceRoot = ".";
