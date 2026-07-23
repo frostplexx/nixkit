@@ -7,11 +7,11 @@
 }:
 stdenvNoCC.mkDerivation (_finalAttrs: {
   pname = "raycast-beta";
-  version = "0.69.0.0";
+  version = "0.70.0.0";
 
   src = fetchurl {
-    url = "https://x-r2.raycast-releases.com/Raycast_Beta_0.69.0.0_76da0f08ae_arm64.dmg";
-    hash = "sha256-0QF8o8fUEl7CyBnfKTEMaEA4dsSaCo/MiTxKH5+2fr8=";
+    url = "https://x-r2.raycast-releases.com/Raycast_Beta_0.70.0.0_2c8d9531b8_arm64.dmg";
+    hash = "sha256-SIda8ovLoCztH48HLGRrUjBmTOyMCnqS2coocE/qkBw=";
   };
 
   nativeBuildInputs = [undmg];
