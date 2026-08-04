@@ -8,13 +8,13 @@
 }:
 stdenv.mkDerivation {
   pname = "aerospace-swipe";
-  version = "0-unstable-2026-06-30";
+  version = "0-unstable-2026-07-19";
 
   src = fetchFromGitHub {
     owner = "acsandmann";
     repo = "aerospace-swipe";
-    hash = "sha256-0SvEebMAiD7+7bGow2EeSyKuwO3qoA0YNWm1UcNkYM4=";
-    rev = "fc3db8757558956e8fe1496cff3e6a9a1b1748ac";
+    hash = "sha256-VsqhN5hUZk3ehVwShvL+4WClvLU+CJGGAnHyJKAwteo=";
+    rev = "16aad5a5ad678335a7593a2afaa473816c278c5f";
   };
 
   nativeBuildInputs = [
