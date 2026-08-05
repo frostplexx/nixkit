@@ -11,7 +11,7 @@ stdenvNoCC.mkDerivation (_finalAttrs: {
 
   src = fetchurl {
     url = "https://github.com/ghostty-org/ghostty/releases/download/tip/ghostty-macos-universal.zip";
-    hash = "sha256-yaoyJQNoddD2a2P8BZWQZjQh8MyBSZV6X/Nb7XJ+Y4c=";
+    hash = "sha256-IBxGGf2hztaJ6aogx26NdrdRYHmEqn+q1jfGSLwggGo=";
   };
 
   nativeBuildInputs = [unzip];
