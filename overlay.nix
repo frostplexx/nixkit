@@ -11,4 +11,9 @@ in
         inherit (packages) dimclient ndcli;
       };
     };
+    vimPlugins =
+      prev.vimPlugins
+      // {
+        inherit (packages) prlsp-nvim;
+      };
   }
