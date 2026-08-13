@@ -5,10 +5,13 @@
   "nix": {
     "enabled": true
   },
+  "nixSubstituters": ["https://nixkit.cachix.org"],
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": ["/^\\.github/workflows/flake-review-(build|comment)\\.yml$/"],
+      "managerFilePatterns": [
+        "/^\\.github/workflows/flake-review-(build|comment)\\.yml$/"
+      ],
       "matchStrings": ["flake-review-ref: \"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "ojsef39/flake-review",
       "datasourceTemplate": "github-tags"
