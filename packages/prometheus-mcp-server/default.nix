@@ -42,6 +42,10 @@
       inherit version;
       sha256 = "sha256-CD7LdbRKQWnn/A9jL5S3gb2w/4d8azW5h3y7Vm/U1NE=";
     };
+    # Drop upstream nixpkgs patches: they target paths/code (e.g. the
+    # Python 3.14 `_resolve_param_hints` fix in fastmcp_slim/fastmcp/tools/function_tool.py)
+    # introduced after 3.2.4, which don't exist in this older release's source layout.
+    patches = [];
     propagatedBuildInputs =
       (old.propagatedBuildInputs or [])
       ++ [
