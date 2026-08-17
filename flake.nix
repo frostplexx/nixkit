@@ -185,36 +185,36 @@
             meta.description = "The Nixkit manual in HTML format";
             allowedReferences = ["out" packagesTableHTML];
           } ''
-                                    dst=$out/share/doc/nixkit
-                                    mkdir -p $dst
-                                    cp $styles/style.css $dst
-                                    chmod +w $dst/style.css
-                                    cat >> $dst/style.css <<'CSS'
-/* nixkit: make system colors (Canvas, scrollbars) follow dark mode and
-   pin the popover sidebar background to the theme background so it does
-   not render as a white block in dark mode. */
-:root { color-scheme: light dark; }
-nav.toc-sidebar { background: var(--background); }
-CSS
-                                    cp -r ${pkgs.documentation-highlighter} $dst/highlightjs
+                                                dst=$out/share/doc/nixkit
+                                                mkdir -p $dst
+                                                cp $styles/style.css $dst
+                                                chmod +w $dst/style.css
+                                                cat >> $dst/style.css <<'CSS'
+            /* nixkit: make system colors (Canvas, scrollbars) follow dark mode and
+               pin the popover sidebar background to the theme background so it does
+               not render as a white block in dark mode. */
+            :root { color-scheme: light dark; }
+            nav.toc-sidebar { background: var(--background); }
+            CSS
+                                                cp -r ${pkgs.documentation-highlighter} $dst/highlightjs
 
-                                    nixos-render-docs -j $NIX_BUILD_CORES manual html \
-                                      --manpage-urls ${pkgs.writeText "manpage-urls.json" "{}"} \
-                                      --revision "main" \
-                                      --generator "nixos-render-docs ${pkgs.lib.version}" \
-                                      --stylesheet style.css \
-                                      --stylesheet highlightjs/mono-blue.css \
-                                      --script ./highlightjs/highlight.pack.js \
-                                      --script ./highlightjs/loader.js \
-                                      --sidebar-depth 1 \
-                                      ${manualSrc}/manual.md \
-                                      $dst/index.html
+                                                nixos-render-docs -j $NIX_BUILD_CORES manual html \
+                                                  --manpage-urls ${pkgs.writeText "manpage-urls.json" "{}"} \
+                                                  --revision "main" \
+                                                  --generator "nixos-render-docs ${pkgs.lib.version}" \
+                                                  --stylesheet style.css \
+                                                  --stylesheet highlightjs/mono-blue.css \
+                                                  --script ./highlightjs/highlight.pack.js \
+                                                  --script ./highlightjs/loader.js \
+                                                  --sidebar-depth 1 \
+                                                  ${manualSrc}/manual.md \
+                                                  $dst/index.html
 
-            sed -i '/<div><h2 class="subtitle">/r ${packagesTableHTML}' $dst/index.html
+                        sed -i '/<div><h2 class="subtitle">/r ${packagesTableHTML}' $dst/index.html
 
-                                    mkdir -p $out/nix-support
-                                    echo "nix-build out $out" >> $out/nix-support/hydra-build-products
-                                    echo "doc manual $dst" >> $out/nix-support/hydra-build-products
+                                                mkdir -p $out/nix-support
+                                                echo "nix-build out $out" >> $out/nix-support/hydra-build-products
+                                                echo "doc manual $dst" >> $out/nix-support/hydra-build-products
           '';
 
         manpages =

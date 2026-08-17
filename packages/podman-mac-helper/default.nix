@@ -29,4 +29,3 @@ buildGoModule rec {
     platforms = platforms.darwin;
   };
 }
-

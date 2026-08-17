@@ -8,71 +8,102 @@ with lib; let
   cfg = config.programs.raycast;
 
   # Build the complete Raycast configuration JSON
-  raycastConfig = {
-    raycast_version = cfg.version;
-    raycast_app_defaults = {
-      provider_schemaVersion = 1;
-      firstKnownVersion = cfg.version;
-      installationDate = cfg.installationDate;
-      anonymousId = cfg.anonymousId;
-    };
-
-    builtin_package_raycastPreferences = {
-      provider_schemaVersion = 1;
-      preferencesGeneral = {
-        raycastGlobalHotkey = cfg.preferences.general.globalHotkey;
-        raycastAlternativeEscape = cfg.preferences.general.alternativeEscape;
+  raycastConfig =
+    {
+      raycast_version = cfg.version;
+      raycast_app_defaults = {
+        provider_schemaVersion = 1;
+        firstKnownVersion = cfg.version;
+        installationDate = cfg.installationDate;
+        anonymousId = cfg.anonymousId;
       };
-      preferencesAppearance = {
-        statusBarIsVisible = cfg.preferences.appearance.statusBarVisible;
-        raycastUI_preferredTextSize = cfg.preferences.appearance.textSize;
-        raycastPreferredWindowMode = cfg.preferences.appearance.windowMode;
-        showFavoritesInCompactMode = cfg.preferences.appearance.showFavoritesInCompactMode;
+
+      builtin_package_raycastPreferences = {
+        provider_schemaVersion = 1;
+        preferencesGeneral = {
+          raycastGlobalHotkey = cfg.preferences.general.globalHotkey;
+          raycastAlternativeEscape = cfg.preferences.general.alternativeEscape;
+        };
+        preferencesAppearance = {
+          statusBarIsVisible = cfg.preferences.appearance.statusBarVisible;
+          raycastUI_preferredTextSize = cfg.preferences.appearance.textSize;
+          raycastPreferredWindowMode = cfg.preferences.appearance.windowMode;
+          showFavoritesInCompactMode = cfg.preferences.appearance.showFavoritesInCompactMode;
+        };
+        preferencesAdvanced = {
+          raycastWindowPresentationMode = cfg.preferences.advanced.windowPresentationMode;
+          navigationCommandStyleIdentifierKey = cfg.preferences.advanced.navigationStyle;
+          popToRootTimeout = cfg.preferences.advanced.popToRootTimeout;
+          keepWindowVisibleOnResignKey = cfg.preferences.advanced.keepWindowVisibleOnResign;
+        };
       };
-      preferencesAdvanced = {
-        raycastWindowPresentationMode = cfg.preferences.advanced.windowPresentationMode;
-        navigationCommandStyleIdentifierKey = cfg.preferences.advanced.navigationStyle;
-        popToRootTimeout = cfg.preferences.advanced.popToRootTimeout;
-        keepWindowVisibleOnResignKey = cfg.preferences.advanced.keepWindowVisibleOnResign;
+
+      # Default package configurations
+      builtin_package_default = {
+        provider_schemaVersion = 1;
+        enabledFallbackSearchIdentifiers = cfg.fallbackSearches;
+        installedNativeExtensionIdentifiers = cfg.installedExtensions;
       };
-    };
 
-    # Default package configurations
-    builtin_package_default = {
-      provider_schemaVersion = 1;
-      enabledFallbackSearchIdentifiers = cfg.fallbackSearches;
-      installedNativeExtensionIdentifiers = cfg.installedExtensions;
-    };
+      builtin_package_snippets = {
+        provider_schemaVersion = 1;
+        snippets = cfg.snippets;
+      };
 
-    builtin_package_snippets = {
-      provider_schemaVersion = 1;
-      snippets = cfg.snippets;
-    };
+      builtin_package_floatingNotes =
+        {
+          provider_schemaVersion = 1;
+        }
+        // optionalAttrs (cfg.floatingNotes != []) {
+          notes = cfg.floatingNotes;
+        };
 
-    builtin_package_floatingNotes = {
-      provider_schemaVersion = 1;
-    } // optionalAttrs (cfg.floatingNotes != []) {
-      notes = cfg.floatingNotes;
-    };
-
-    # Other built-in packages with default schema version
-  } // (builtins.listToAttrs (map (pkg: {
-    name = "builtin_package_${pkg}";
-    value.provider_schemaVersion = 1;
-  }) [
-    "typingPractice" "raycastAccount" "fileSearch" "github" "quick-ai"
-    "calendar" "dictionary" "scriptCommands" "emoji" "raycastExtensions"
-    "navigation" "linear" "clipboardHistory" "webSearches" "browserBookmarks"
-    "url" "reminders" "calculator" "contacts" "asana" "translator"
-    "rootSearch" "nodeExtension" "developer" "gSuite" "organizations"
-    "systemCommands" "jira" "screenshots" "zoom" "media"
-  ])) // {
-    raycast_onboarding = {
-      provider_schemaVersion = 1;
-      showOnboardingItem = false;
-      completedTaskIdentifiers = [];
-    };
-  } // cfg.extraConfig;
+      # Other built-in packages with default schema version
+    }
+    // (builtins.listToAttrs (map (pkg: {
+        name = "builtin_package_${pkg}";
+        value.provider_schemaVersion = 1;
+      }) [
+        "typingPractice"
+        "raycastAccount"
+        "fileSearch"
+        "github"
+        "quick-ai"
+        "calendar"
+        "dictionary"
+        "scriptCommands"
+        "emoji"
+        "raycastExtensions"
+        "navigation"
+        "linear"
+        "clipboardHistory"
+        "webSearches"
+        "browserBookmarks"
+        "url"
+        "reminders"
+        "calculator"
+        "contacts"
+        "asana"
+        "translator"
+        "rootSearch"
+        "nodeExtension"
+        "developer"
+        "gSuite"
+        "organizations"
+        "systemCommands"
+        "jira"
+        "screenshots"
+        "zoom"
+        "media"
+      ]))
+    // {
+      raycast_onboarding = {
+        provider_schemaVersion = 1;
+        showOnboardingItem = false;
+        completedTaskIdentifiers = [];
+      };
+    }
+    // cfg.extraConfig;
 
   # Python environment and scripts
   pythonEnv = pkgs.python3.withPackages (ps: [ps.cryptography]);
@@ -84,34 +115,39 @@ with lib; let
       nativeBuildInputs = [pythonEnv];
       json = builtins.toJSON configJson;
       passAsFile = ["json"];
-    } (if encryptPassword != null then ''
-      # Build encrypted .rayconfig using Scrypt + AES-256-GCM
-      ${pythonEnv}/bin/python3 ${buildScript} "$jsonPath" "${encryptPassword}" "$out"
-    '' else ''
-      # Build unencrypted .rayconfig (gzipped only)
-      ${pythonEnv}/bin/python3 ${buildScript} "$jsonPath" "" "$out"
-    '');
+    } (
+      if encryptPassword != null
+      then ''
+        # Build encrypted .rayconfig using Scrypt + AES-256-GCM
+        ${pythonEnv}/bin/python3 ${buildScript} "$jsonPath" "${encryptPassword}" "$out"
+      ''
+      else ''
+        # Build unencrypted .rayconfig (gzipped only)
+        ${pythonEnv}/bin/python3 ${buildScript} "$jsonPath" "" "$out"
+      ''
+    );
 
   # Determine the final config to use
   finalConfig =
-    if cfg.configFile != null then
-       let
-         content = builtins.readFile cfg.configFile;
-       in
-         builtins.fromJSON content
-    else if cfg.settings != null then
+    if cfg.configFile != null
+    then let
+      content = builtins.readFile cfg.configFile;
+    in
+      builtins.fromJSON content
+    else if cfg.settings != null
+    then
       # Use provided attribute set directly
       cfg.settings
-    else if cfg.enable then
+    else if cfg.enable
+    then
       # Build from declarative options
       raycastConfig
     else null;
 
   finalConfigFile =
-    if finalConfig != null then
-      mkRayconfig finalConfig cfg.encryptionPassword
+    if finalConfig != null
+    then mkRayconfig finalConfig cfg.encryptionPassword
     else null;
-
 in {
   options.programs.raycast = {
     enable = mkEnableOption "Raycast configuration management";
