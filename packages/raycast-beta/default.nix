@@ -7,7 +7,7 @@
 }:
 stdenvNoCC.mkDerivation (_finalAttrs: {
   pname = "raycast-beta";
-  version = "0.71.7.0";
+  version = "2.0.3.0";
 
   src = fetchurl {
     url = "https://x-r2.raycast-releases.com/Raycast_Beta_0.71.7.0_a467a146eb_arm64.dmg";
