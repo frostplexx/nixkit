@@ -34,7 +34,8 @@
     {
       "matchManagers": ["nix", "nix-update"],
       "automerge": true,
-      "automergeType": "pr"
+      "automergeType": "pr",
+      "platformAutomerge": false
     }
   ]
 }
