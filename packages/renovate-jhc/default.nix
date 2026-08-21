@@ -6,13 +6,13 @@
   renovate,
 }:
 renovate.overrideAttrs (finalAttrs: prev: {
-  version = "4.7.0";
+  version = "4.8.0";
 
   src = fetchFromGitHub {
     owner = "JHOFER-Cloud";
     repo = "renovate";
     rev = finalAttrs.version;
-    hash = "sha256-tLRQqLAfC+ht+6tkpsPa58SllYzP6HmdolMrq3z1kkc=";
+    hash = "sha256-6TsEPFOCZAB699uuZXOvwLzLFc+6wlH6KW/tpxqUURw=";
   };
 
   pnpmDeps = fetchPnpmDeps {
