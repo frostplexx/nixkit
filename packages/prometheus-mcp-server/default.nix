@@ -3,59 +3,7 @@
   python3Packages,
   fetchPypi,
   nix-update-script,
-}: let
-  pyproject-toml = python3Packages.buildPythonPackage rec {
-    pname = "pyproject-toml";
-    version = "0.1.0";
-    format = "setuptools";
-    src = fetchPypi {
-      pname = builtins.replaceStrings ["-"] ["_"] pname;
-      inherit version;
-      sha256 = "sha256-d3LSYRP7ilkyiAzxyZiYeZW7EOg08Le+X0b26onwZFA=";
-    };
-    nativeBuildInputs = with python3Packages; [setuptools];
-    preBuild = "echo 'from setuptools import setup; setup()' > setup.py";
-    doCheck = false;
-  };
-
-  py-key-value-aio = python3Packages.py-key-value-aio.overridePythonAttrs (_: rec {
-    version = "0.4.4";
-    src = fetchPypi {
-      pname = builtins.replaceStrings ["-"] ["_"] "py-key-value-aio";
-      inherit version;
-      sha256 = "sha256-4wEuYkPtfMCbsFRXvU0DsbpcKxyocACWs5J9t5/7vlU=";
-    };
-    sourceRoot = "py_key_value_aio-${version}";
-    pythonImportsCheck = [];
-    doCheck = false;
-  });
-
-  # Override py-key-value-aio at scope level so all transitive deps pick up 0.4.4
-  pyScope = python3Packages.overrideScope (_: prev: {
-    py-key-value-aio = py-key-value-aio;
-  });
-
-  fastmcp = pyScope.fastmcp.overridePythonAttrs (old: rec {
-    version = "3.2.4";
-    src = fetchPypi {
-      inherit (old) pname;
-      inherit version;
-      sha256 = "sha256-CD7LdbRKQWnn/A9jL5S3gb2w/4d8azW5h3y7Vm/U1NE=";
-    };
-    # Drop upstream nixpkgs patches: they target paths/code (e.g. the
-    # Python 3.14 `_resolve_param_hints` fix in fastmcp_slim/fastmcp/tools/function_tool.py)
-    # introduced after 3.2.4, which don't exist in this older release's source layout.
-    patches = [];
-    propagatedBuildInputs =
-      (old.propagatedBuildInputs or [])
-      ++ [
-        py-key-value-aio
-        python3Packages.uncalled-for
-        python3Packages.watchfiles
-      ];
-    doCheck = false;
-  });
-in
+}:
   python3Packages.buildPythonApplication rec {
     pname = "prometheus-mcp-server";
     version = "1.6.2";
@@ -71,9 +19,6 @@ in
 
     propagatedBuildInputs = with python3Packages; [
       fastmcp
-      mcp
-      prometheus-api-client
-      pyproject-toml
       python-dotenv
       requests
       structlog
