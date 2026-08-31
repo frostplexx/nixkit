@@ -4,26 +4,27 @@
   fetchFromGitHub,
   installShellFiles,
   stdenv,
+  pkgs,
   nix-update-script,
 }:
 buildGo127Module rec {
   pname = "flate";
-  version = "0.6.0";
+  version = "0.6.2";
 
   src = fetchFromGitHub {
     owner = "home-operations";
     repo = "flate";
     rev = "v${version}";
-    hash = "sha256-Y4P3RQEkVI3HJvJd8cQmSC65RJYNKGxzB8LvnqgGVfQ=";
+    hash = "sha256-omjnwWCSoj/OU7O4vGwK4qkCoPT+kv/IP8s99AQ3eQs=";
   };
 
-  vendorHash = "sha256-REVrrpO7Wbd3jj+2x1eLODLiXfpLvnYkS1o5wp3mGm0=";
+  vendorHash = "sha256-pKO/oahZDvk3HVOSSFv/Qw0inRMUx35W6VTOYeEnD3Q=";
 
   subPackages = ["cmd/flate"];
 
   ldflags = ["-s" "-w" "-X" "main.version=${version}"];
 
-  nativeBuildInputs = [installShellFiles];
+  nativeBuildInputs = [installShellFiles pkgs.go_1_27];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd flate \
