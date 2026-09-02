@@ -9,16 +9,16 @@
 }:
 buildGo127Module rec {
   pname = "flate";
-  version = "0.6.2";
+  version = "0.6.4";
 
   src = fetchFromGitHub {
     owner = "home-operations";
     repo = "flate";
     rev = "v${version}";
-    hash = "sha256-omjnwWCSoj/OU7O4vGwK4qkCoPT+kv/IP8s99AQ3eQs=";
+    hash = "sha256-aKjO5MA5DWOu1Vx+bfUIPlOmB1sHs7Nrlsj+toknjj0=";
   };
 
-  vendorHash = "sha256-pKO/oahZDvk3HVOSSFv/Qw0inRMUx35W6VTOYeEnD3Q=";
+  vendorHash = "sha256-EE1b6e7pmhjCp5DG4tYK73e+tTss12tL0HM/SKylugc=";
 
   subPackages = ["cmd/flate"];
 
