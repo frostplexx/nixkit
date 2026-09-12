@@ -24,6 +24,9 @@ stdenvNoCC.mkDerivation (_finalAttrs: {
     mkdir -p "$out/Applications/Ghostty.app"
     cp -R . "$out/Applications/Ghostty.app"
 
+    mkdir -p "$out/bin"
+    ln -s "$out/Applications/Ghostty.app/Contents/MacOS/ghostty" "$out/bin/ghostty"
+
     runHook postInstall
   '';
 
