@@ -34,6 +34,7 @@ stdenvNoCC.mkDerivation (_finalAttrs: {
   };
 
   meta = {
+    mainProgram = "ghostty";
     description = " 👻 Ghostty is a fast, feature-rich, and cross-platform terminal emulator that uses platform-native UI and GPU acceleration. ";
     homepage = "https://ghostty.org";
     license = lib.licenses.mit;
