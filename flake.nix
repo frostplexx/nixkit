@@ -24,7 +24,7 @@
         unfreePkgs = import inputs.nixpkgs {
           inherit system;
           config.allowUnfreePredicate = pkg:
-            builtins.elem (inputs.nixpkgs.lib.getName pkg) ["raycast-beta"];
+            builtins.elem (inputs.nixpkgs.lib.getName pkg) ["raycast"];
         };
 
         nixkitPackages = import ./packages {

@@ -478,9 +478,9 @@ in {
         ''
       );
 
-      # Install Raycast Beta application and import script
+      # Install Raycast application and import script
       home.packages = [
-        pkgs.raycast-beta
+        pkgs.raycast
         (pkgs.writeShellScriptBin "raycast-import-config" ''
           set -euo pipefail
 
@@ -499,7 +499,7 @@ in {
           # Use AppleScript to automate the import process
           osascript <<EOF
           -- Activate Raycast
-          tell application "Raycast Beta" to activate
+          tell application "Raycast" to activate
           delay 0.5
 
           -- Open Raycast Root Search using configured hotkey
@@ -520,7 +520,7 @@ in {
 
           -- Try to automate file selection using UI scripting
           tell application "System Events"
-            tell process "Raycast Beta"
+            tell process "Raycast"
               -- Wait for file dialog to appear
               repeat 10 times
                 if (count of windows) > 0 then exit repeat
