@@ -24,7 +24,6 @@
         defaultbrowser = pkgs.callPackage ./defaultbrowser {};
         nixupdater = pkgs.callPackage ./nixupdater {};
         opsops = pkgs.callPackage ./opsops {};
-        aerospace-swipe = pkgs.callPackage ./aerospace-swipe {};
         skhd_zig = pkgs.callPackage ./skhd_zig {};
         yabai = pkgs.callPackage ./yabai {};
         podman-mac-helper = pkgs.callPackage ./podman-mac-helper {};
