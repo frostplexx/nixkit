@@ -13,6 +13,7 @@
   packages =
     {
       flate = pkgs.callPackage ./flate {};
+      mcp-remote = pkgs.callPackage ./mcp-remote {};
       prometheus-mcp-server = pkgs.callPackage ./prometheus-mcp-server {};
       kubernetes-mcp-server = pkgs.callPackage ./kubernetes-mcp-server {};
       renovate-jhc = pkgs.callPackage ./renovate-jhc {inherit (pkgs) renovate;};
