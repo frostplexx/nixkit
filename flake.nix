@@ -24,7 +24,7 @@
         unfreePkgs = import inputs.nixpkgs {
           inherit system;
           config.allowUnfreePredicate = pkg:
-            builtins.elem (inputs.nixpkgs.lib.getName pkg) ["raycast-beta"];
+            builtins.elem (inputs.nixpkgs.lib.getName pkg) [];
         };
 
         nixkitPackages = import ./packages {
@@ -123,7 +123,6 @@
             --replace-fail '@NIXKIT_VERSION@' "${nixkitVersion.release}" \
             --replace-fail '@NIXKIT_OPTIONS_JSON@' ${optionsJSON}/share/doc/nixkit/options.json
           cp ${./docs/manual/known-issues.md} $out/known-issues.md
-          cp ${./docs/manual/raycast.md} $out/raycast.md
         '';
 
         manualHTML = let

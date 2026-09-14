@@ -25,10 +25,8 @@
         defaultbrowser = pkgs.callPackage ./defaultbrowser {};
         nixupdater = pkgs.callPackage ./nixupdater {};
         opsops = pkgs.callPackage ./opsops {};
-        aerospace-swipe = pkgs.callPackage ./aerospace-swipe {};
         skhd_zig = pkgs.callPackage ./skhd_zig {};
         yabai = pkgs.callPackage ./yabai {};
-        raycast-beta = pkgs.callPackage ./raycast-beta {};
         podman-mac-helper = pkgs.callPackage ./podman-mac-helper {};
         ghostty-tip = pkgs.callPackage ./ghostty-tip {};
         mac-mouse-fix = pkgs.callPackage ./mac-mouse-fix {};
