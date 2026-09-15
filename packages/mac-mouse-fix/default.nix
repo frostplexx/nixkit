@@ -7,13 +7,13 @@
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "mac-mouse-fix";
-  version = "3.0.8";
+  version = "3.1.0";
 
   src = fetchFromGitHub {
     owner = "noah-nuebling";
     repo = "mac-mouse-fix";
     tag = finalAttrs.version;
-    hash = "sha256-+YETgkmSb1eiAj88Y9wFTQ2eiFxsuFEjkFZYeXjra5k=";
+    hash = "sha256-v79P4Wf/Csg8hdZ35MUPho31BGyUX1cxn3DkIZ4I8uA=";
     fetchSubmodules = false;
   };
 
