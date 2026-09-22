@@ -1,6 +1,5 @@
 {
   fetchFromGitHub,
-  fetchpatch,
   lib,
   nix-update-script,
   stdenv,
@@ -17,14 +16,12 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = false;
   };
 
-  # Fix Spaces & Mission Control click-and-drag on macOS 26+ (PR #1875, fixes #1871).
-  patches = [
-    (fetchpatch {
-      name = "mmf-macos26-mission-control-drag.patch";
-      url = "https://github.com/noah-nuebling/mac-mouse-fix/pull/1875.diff";
-      hash = "sha256-6L44EH89NiSRtCF+GWBrDGGNZTTCJlKtsmi99eQWoQ0=";
-    })
-  ];
+  # MMF's helper watches the folder holding the app bundle and treats a vanished
+  # bundle as "the user uninstalled me", trashing ~/Library/Application Support/
+  # (config.plist included). Nix rebuilds replace the bundle in place, so that
+  # fires spuriously and resets the user's settings to stock. Nix owns the
+  # bundle's lifecycle, so the detection is turned off.
+  patches = [./disable-uninstall-watcher.patch];
 
   __noChroot = true;
 

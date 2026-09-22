@@ -1,0 +1,23 @@
+--- a/Helper/FileMonitor/FileMonitor.m
++++ b/Helper/FileMonitor/FileMonitor.m
+@@ -20,7 +20,20 @@
+ @implementation FileMonitor
+ 
+ + (void)load {
++#if 0 /** Disabled in the Nix build. [Sep 2026]
++          FileMonitor watches the folder enclosing the app bundle and, when
++          `NSWorkspace URLForApplicationWithBundleIdentifier:` comes back nil,
++          concludes the user trashed the app and calls `uninstallCompletely()`,
++          which trashes `~/Library/Application Support/com.nuebling.mac-mouse-fix/`
++          — config.plist included.
++          Under Nix the bundle is not user-managed: every rebuild that changes the
++          store path replaces `/Applications/Mac Mouse Fix.app` wholesale, which
++          fires that callback while Launch Services has the bundle unregistered.
++          The nil is then a race, not an uninstall, and the user's settings get
++          reset to stock. Nix owns the bundle's lifecycle, so the uninstall
++          detection has nothing useful to do here. */
+     [self setupFSMonitor];
++#endif
+ }
+ 
+ + (void)setupFSMonitor {
