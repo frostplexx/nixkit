@@ -24,7 +24,7 @@ in {
         # Include the xdg-utils for Linux systems
         pkgs.xdg-utils
       ]
-      ++ lib.optional pkgs.stdenv.isDarwin pkgs.defaultbrowser;
+      ++ lib.optional pkgs.stdenv.hostPlatform.isDarwin pkgs.defaultbrowser;
 
     home.activation.setDefaultBrowser = lib.hm.dag.entryAfter ["writeBoundary"] ''
       setDefaultBrowser() {
@@ -45,7 +45,7 @@ in {
           # macOS systems use the compiled utility
           echo "Setting default browser to $browser"
           $DRY_RUN_CMD ${
-        if pkgs.stdenv.isDarwin
+        if pkgs.stdenv.hostPlatform.isDarwin
         then "${pkgs.defaultbrowser}/bin/defaultbrowser"
         else "defaultbrowser"
       } "$browser"
