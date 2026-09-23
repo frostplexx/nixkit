@@ -62,7 +62,7 @@ in {
   };
 
   config = mkIf cfg.enable {
-    home.packages = lib.optional pkgs.stdenv.isDarwin pkgs.nixupdater;
+    home.packages = lib.optional pkgs.stdenv.hostPlatform.isDarwin pkgs.nixupdater;
 
     launchd.agents.nixupdater = {
       enable = true;
