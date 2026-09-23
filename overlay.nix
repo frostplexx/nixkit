@@ -8,23 +8,31 @@
 # enough, fails outright -- e.g. mcp-remote's pnpmDeps hash is computed with
 # pnpm 11 and cannot be reproduced by pnpm 12.
 self: _final: prev: let
-  nixkitPkgs =
-    builtins.removeAttrs self.packages.${prev.stdenv.hostPlatform.system}
-    ["manpages" "manualHTML" "optionsJSON" "website"];
+  system = prev.stdenv.hostPlatform.system;
 in
-  nixkitPkgs
-  // {
-    # NOTE: these are built against nixkit's python3 but injected into the
-    # consumer's package set. Safe only while both nixpkgs agree on the python3
-    # minor version; if they diverge, take these two from `prev` instead.
-    python3 = prev.python3.override {
-      packageOverrides = _pyfinal: _pyprev: {
-        inherit (nixkitPkgs) dimclient ndcli;
+  # nixkit doesn't build for every system a consumer's pkgs instance can be
+  # (e.g. pkgsi686Linux, used for 32-bit graphics support, is "i686-linux",
+  # which isn't in this flake's `systems`). Leave those untouched.
+  if !(self.packages ? ${system})
+  then {}
+  else let
+    nixkitPkgs =
+      builtins.removeAttrs self.packages.${system}
+      ["manpages" "manualHTML" "optionsJSON" "website"];
+  in
+    nixkitPkgs
+    // {
+      # NOTE: these are built against nixkit's python3 but injected into the
+      # consumer's package set. Safe only while both nixpkgs agree on the python3
+      # minor version; if they diverge, take these two from `prev` instead.
+      python3 = prev.python3.override {
+        packageOverrides = _pyfinal: _pyprev: {
+          inherit (nixkitPkgs) dimclient ndcli;
+        };
       };
-    };
-    vimPlugins =
-      prev.vimPlugins
-      // {
-        inherit (nixkitPkgs) prlsp-nvim;
-      };
-  }
+      vimPlugins =
+        prev.vimPlugins
+        // {
+          inherit (nixkitPkgs) prlsp-nvim;
+        };
+    }
