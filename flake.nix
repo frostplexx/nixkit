@@ -276,7 +276,7 @@
       };
 
       flake = {
-        overlays.default = import ./overlay.nix;
+        overlays.default = import ./overlay.nix inputs.self;
         homeModules.default = import ./modules/home;
         nixosModules.default = {
           nixpkgs.overlays = [inputs.self.overlays.default];
