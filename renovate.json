@@ -3,7 +3,8 @@
   "reviewers": ["frostplexx", "ojsef39"],
   "extends": ["config:recommended"],
   "nix": {
-    "enabled": true
+    "enabled": true,
+    "postUpdateOptions": ["nixUpdateVendorHashes"]
   },
   "nixSubstituters": ["https://nixkit.cachix.org"],
   "customManagers": [
