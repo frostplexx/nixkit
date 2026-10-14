@@ -23,7 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
   pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;
     fetcherVersion = 4;
-    hash = "sha256-pqZIsJos1thOuLoJtRDYPNldhAaaLDlqjdfQ0ntKA/4=";
+    # pnpm 11 leaves an empty v11/links dir in the store on darwin but not on
+    # linux, so the hash would differ per platform. Drop it before packing.
+    preFixup = ''
+      rm -rf $storePath/v11/links
+    '';
+    hash = "sha256-h1Rh3xDw6mpCBWfh+fjfWtZ8WrdziEL2d6S+k9VaghQ=";
   };
 
   nativeBuildInputs = [
@@ -44,7 +49,10 @@ stdenv.mkDerivation (finalAttrs: {
   installPhase = ''
     runHook preInstall
 
-    pnpm prune --prod --ignore-scripts
+    # pnpm 12's prune verifies the lockfile against the registry, which the
+    # sandbox can't reach; an offline --prod reinstall gets the same result.
+    rm -rf node_modules
+    pnpm install --offline --prod --ignore-scripts --frozen-lockfile
 
     mkdir -p $out/lib/mcp-remote
     cp -r dist node_modules package.json $out/lib/mcp-remote/
