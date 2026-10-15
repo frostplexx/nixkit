@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
+  buildGoLatestModule,
   fetchFromGitHub,
   nix-update-script,
 }:
-buildGoModule rec {
+buildGoLatestModule rec {
   pname = "topf";
   version = "0.6.0";
 
