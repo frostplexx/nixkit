@@ -11,13 +11,13 @@
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "mcp-remote";
-  version = "0.15.1";
+  version = "0.15.2";
 
   src = fetchFromGitHub {
     owner = "geelen";
     repo = "mcp-remote";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-pykcdEoim08npawyWOXf8PR60f+SedxEuuynWSwj5t0=";
+    hash = "sha256-/bA+kdlnC830fFDAQBQNVm3qTmMSX1hyewaXCkT5Erk=";
   };
 
   pnpmDeps = fetchPnpmDeps {
