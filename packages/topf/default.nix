@@ -6,16 +6,16 @@
 }:
 buildGoLatestModule rec {
   pname = "topf";
-  version = "0.6.1";
+  version = "0.6.2";
 
   src = fetchFromGitHub {
     owner = "postfinance";
     repo = "topf";
     rev = "v${version}";
-    hash = "sha256-avrcOu+6hGqr/wtxQl/ysf7E76b+XtGf2lxDrJqnzJY=";
+    hash = "sha256-frUyZtpA0iyFwHxlN5SqZ0WFfU4sMalmdkHtulg+B3I=";
   };
 
-  vendorHash = "sha256-yxQCn9S0U5AjxJUmTt/eKopnZ1W+J6Zj8QaTS7W1X0w=";
+  vendorHash = "sha256-VLZLPM1/a1Lf5ggk4pwB/AL+Drrdfmm3f9DYjvpBKcA=";
 
   subPackages = ["cmd/topf"];
 
