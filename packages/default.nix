@@ -12,6 +12,7 @@
 
   packages =
     {
+      better-json5-lsp = pkgs.callPackage ./better-json5-lsp {};
       flate = pkgs.callPackage ./flate {};
       mcp-remote = pkgs.callPackage ./mcp-remote {};
       prometheus-mcp-server = pkgs.callPackage ./prometheus-mcp-server {};
