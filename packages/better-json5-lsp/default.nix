@@ -54,7 +54,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  passthru.updateScript = nix-update-script {extraArgs = ["--version=branch"];};
+  # TODO: drop the branch once upstream has the lockfile fix (see src TODO)
+  passthru.updateScript = nix-update-script {extraArgs = ["--version=branch=chore/update_yarn"];};
 
   meta = {
     description = "JSON5 language server (schema validation, completion, hover) from the better-json5 VS Code extension";
