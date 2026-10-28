@@ -12,12 +12,10 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.7.0-unstable-2026-10-27";
 
   # Upstream publishes no tags or GitHub releases, only the VS Code extension.
-  # TODO: back to BlueGlassBlock once the yarn.lock v10 bump is merged upstream
-  # (nixpkgs' yarn-berry_4 can't install the v8 lockfile offline).
   src = fetchFromGitHub {
-    owner = "ojsef39";
+    owner = "BlueGlassBlock";
     repo = "better-json5";
-    rev = "d8428b6b3e0965373c2cea1a1c959c0bce4dfa92";
+    rev = "eebc9d9ff77ec3daf0002d00095d2fd3ab8484d0";
     hash = "sha256-XbXeasdSz5N6hvUoafR6ZQiJYa4+wh3UItAgzjlBBCw=";
   };
 
@@ -54,8 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  # TODO: drop the branch once upstream has the lockfile fix (see src TODO)
-  passthru.updateScript = nix-update-script {extraArgs = ["--version=branch=chore/update_yarn"];};
+  passthru.updateScript = nix-update-script {extraArgs = ["--version=branch"];};
 
   meta = {
     description = "JSON5 language server (schema validation, completion, hover) from the better-json5 VS Code extension";
