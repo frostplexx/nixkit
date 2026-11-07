@@ -11,13 +11,13 @@
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "mcp-remote";
-  version = "0.16.1";
+  version = "0.16.5";
 
   src = fetchFromGitHub {
     owner = "geelen";
     repo = "mcp-remote";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-CRQlrIjHvzkVe67c4pen76S5ayt23OZki1qgTIRXiPU=";
+    hash = "sha256-1OOoVM7ewifNlTms+AdfwVuhrLrslPeFJXm24ukWCJ4=";
   };
 
   pnpmDeps = fetchPnpmDeps {
@@ -28,7 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     preFixup = ''
       rm -rf $storePath/v11/links
     '';
-    hash = "sha256-RbbHEkBg9qERcr1vjPcLt70qIMt2VzfuriSkjaTbOf4=";
+    hash = "sha256-XnC8DHW+HT8FD/BFLnrJs6iBfRy3geauLhsBtx/XMMY=";
   };
 
   nativeBuildInputs = [
