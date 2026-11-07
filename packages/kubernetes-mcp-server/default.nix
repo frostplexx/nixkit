@@ -15,7 +15,7 @@ buildGoModule rec {
     hash = "sha256-6OIdUjXRqQBASObk73A0wxfhN5ARB2tv298GPXO8jpQ=";
   };
 
-  vendorHash = "sha256-B8Mb0nyflZwQK1UxOlPwTxX2FjwVMM5RiAPJughaOWw=";
+  vendorHash = "sha256-7BoixYxAhC9/rv+L1QRGdtqoYNUxyuAsWwbaSpqzoFY=";
 
   subPackages = ["cmd/kubernetes-mcp-server"];
 
