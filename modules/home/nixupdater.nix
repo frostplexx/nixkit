@@ -40,6 +40,7 @@ in {
         "kitty-overlay"
         "alacritty"
         "ghostty"
+        "rex"
       ];
       default = "kitty";
       example = "kitty-overlay";
@@ -52,6 +53,8 @@ in {
           kitty-overlay   overlay in the focused kitty window *
           alacritty
           ghostty
+          rex             new session in the running Rex server, shown
+                          in the Rex app; falls back to a new kitty window
 
         * kitty-tab and kitty-overlay use kitty's remote-control protocol
           (kitty @ new-window). They require `allow_remote_control yes` in
