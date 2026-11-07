@@ -11,6 +11,7 @@ enum Terminal: String, CaseIterable {
     case kittyOverlay = "kitty-overlay"
     case alacritty = "alacritty"
     case ghostty   = "ghostty"
+    case rex       = "rex"
 
     static var names: String {
         allCases.map { $0.rawValue }.joined(separator: ", ")
@@ -26,6 +27,7 @@ enum Terminal: String, CaseIterable {
              .kittyOverlay:   return "net.kovidgoyal.kitty"
         case .alacritty:      return "org.alacritty"
         case .ghostty:        return "com.mitchellh.ghostty"
+        case .rex:            return "com.superlogical.rex"
         }
     }
 
@@ -71,6 +73,7 @@ func parseArgs() -> Config {
                                             kitty           new kitty window (default)
                                             kitty-tab       new tab in running kitty
                                             kitty-overlay   overlay in focused kitty window
+                                            rex             new session in running Rex
               -h, --help                  Show this help
             """)
             exit(0)
@@ -394,7 +397,116 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.terminateChildProcess()
                 self?.updateChecker.check()
             }
+
+        case .rex:
+            // Run the update in its own session in the running Rex server and
+            // show it in the Rex app. Falls back to a new kitty window when no
+            // Rex server is running.
+            let launched = launchRexSession(
+                command: [fishBin, "--no-config", scriptURL.path],
+                sentinel: sentinel,
+                scriptURL: scriptURL
+            )
+            if !launched {
+                log("rex: no running Rex server, falling back to new kitty window")
+                let kittyBin = resolveKittyBin() ?? "kitty"
+                let proc = launchProcess(kittyBin,
+                                         args: [fishBin, "--no-config", scriptURL.path])
+                terminalProcess = proc
+                watchSentinel(sentinel) { [weak self] in
+                    try? FileManager.default.removeItem(at: sentinel)
+                    try? FileManager.default.removeItem(at: scriptURL)
+                    self?.terminateChildProcess()
+                    self?.updateChecker.check()
+                }
+            }
         }
+    }
+
+    // MARK: - Rex
+
+    /// Find the rex CLI. Rex.app keeps it inside its server bundle, which is
+    /// not on the PATH a menu-bar app gets.
+    private func resolveRexBin() -> String? {
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        let candidates = [
+            "\(home)/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS/rex",
+            "/opt/homebrew/bin/rex",
+            "/usr/local/bin/rex",
+        ]
+        return candidates.first { FileManager.default.isExecutableFile(atPath: $0) }
+    }
+
+    /// Run `rex <args…>` and return its stdout, or nil when it fails.
+    private func runRex(_ rexBin: String, _ args: [String]) -> String? {
+        let stdoutPipe = Pipe()
+        let task = Process()
+        task.executableURL  = URL(fileURLWithPath: rexBin)
+        task.arguments      = args
+        task.standardOutput = stdoutPipe
+        task.standardError  = Pipe()
+        var env = ProcessInfo.processInfo.environment
+        env["PATH"] = kPATH
+        task.environment = env
+
+        do { try task.run() } catch { log("rex \(args.first ?? "") failed: \(error)"); return nil }
+        let outData = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
+        task.waitUntilExit()
+
+        guard task.terminationStatus == 0 else {
+            log("rex \(args.joined(separator: " ")) exited \(task.terminationStatus)")
+            return nil
+        }
+        return String(data: outData, encoding: .utf8)
+    }
+
+    /// The connected Rex app client, used to switch the app to a session.
+    private func rexAppClientID(_ rexBin: String) -> String? {
+        guard let out = runRex(rexBin, ["client", "ls", "--json"]),
+              let json = try? JSONSerialization.jsonObject(with: Data(out.utf8)) as? [String: Any],
+              let clients = json["clients"] as? [[String: Any]] else { return nil }
+        return clients.first {
+            ($0["info"] as? [String: Any])?["kind"] as? String == "app"
+                && $0["connection_state"] as? String == "connected"
+        }?["client_id"] as? String
+    }
+
+    /// Create a Rex session that runs `command`, show it in the Rex app, and
+    /// kill the session once the sentinel appears.
+    ///
+    /// Returns `false` when rex is missing or no server is running (caller
+    /// should fall back). `--autostart=false` keeps rex from starting a
+    /// headless server whose session nobody would see.
+    @discardableResult
+    private func launchRexSession(command: [String], sentinel: URL, scriptURL: URL) -> Bool {
+        guard let rexBin = resolveRexBin() else {
+            log("rex binary not found"); return false
+        }
+
+        // `rex new` prints the new session as JSON: {"session_id": "session:…", …}
+        guard let out = runRex(rexBin, ["new", "NixUpdater", "--autostart=false",
+                                        "--shell", "none", "--json", "--"] + command),
+              let json = try? JSONSerialization.jsonObject(with: Data(out.utf8)) as? [String: Any],
+              let sessionID = json["session_id"] as? String else {
+            log("rex new did not create a session"); return false
+        }
+        log("rex launched session: \(sessionID)")
+
+        // Bring Rex to the front and switch its app to the new session.
+        if let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: Terminal.rex.bundleID) {
+            NSWorkspace.shared.openApplication(at: appURL, configuration: NSWorkspace.OpenConfiguration())
+        }
+        if let clientID = rexAppClientID(rexBin) {
+            _ = runRex(rexBin, ["-C", clientID, "do", "session.select", "session_id=\(sessionID)"])
+        }
+
+        watchSentinel(sentinel) { [weak self] in
+            try? FileManager.default.removeItem(at: sentinel)
+            try? FileManager.default.removeItem(at: scriptURL)
+            _ = self?.runRex(rexBin, ["kill", sessionID])
+            self?.updateChecker.check()
+        }
+        return true
     }
 
     // MARK: - Kitty Remote Control
