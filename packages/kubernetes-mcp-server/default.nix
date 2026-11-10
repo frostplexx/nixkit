@@ -12,7 +12,7 @@ buildGoModule rec {
     owner = "containers";
     repo = "kubernetes-mcp-server";
     rev = "v${version}";
-    hash = "sha256-6OIdUjXRqQBASObk73A0wxfhN5ARB2tv298GPXO8jpQ=";
+    hash = "sha256-7BoixYxAhC9/rv+L1QRGdtqoYNUxyuAsWwbaSpqzoFY=";
   };
 
   vendorHash = "sha256-B8Mb0nyflZwQK1UxOlPwTxX2FjwVMM5RiAPJughaOWw=";
