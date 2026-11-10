@@ -5,6 +5,7 @@
   pkg-config,
   openssl,
   sops,
+  libgit2,
   nix-update-script,
 }:
 rustPlatform.buildRustPackage rec {
@@ -24,8 +25,10 @@ rustPlatform.buildRustPackage rec {
     pkg-config
     sops
   ];
+
   buildInputs = [
     openssl
+    libgit2
     sops
   ];
 
