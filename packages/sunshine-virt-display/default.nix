@@ -9,7 +9,7 @@
   libdrm,
   nix-update-script,
 }: let
-  version = "2.0.0";
+  version = "2.1.0";
   pythonEnv = python3.withPackages (ps: [ps.jeepney]);
 in
   stdenv.mkDerivation {
@@ -20,7 +20,7 @@ in
       owner = "frostplexx";
       repo = "sunshine_virt_display";
       rev = "v${version}";
-      sha256 = "sha256-RjkGp76S8zEHHHPa31+CbSzT45a8QTvG6CfYkxhjOpY=";
+      sha256 = "sha256-bmsqjVS04o7Ej8hetwElwSGUtzvr0pvP3tsGpC6JCSQ=";
     };
 
     nativeBuildInputs = [makeWrapper];
