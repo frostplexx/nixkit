@@ -6,20 +6,20 @@
   renovate,
 }:
 renovate.overrideAttrs (finalAttrs: prev: {
-  version = "4.40.0";
+  version = "4.41.0";
 
   src = fetchFromGitHub {
     owner = "JHOFER-Cloud";
     repo = "renovate";
     rev = finalAttrs.version;
-    hash = "sha256-P8tissD7ZTuL9jk2HhR3X8MyO7h7eiG9utVSGPLbS5s=";
+    hash = "sha256-3ss56DUyUzHu/YCdlli4wg4yJgb7IX2XB+aqw4g701A=";
   };
 
   pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;
     pnpm = pnpm_11;
     fetcherVersion = 4;
-    hash = "sha256-GCn9T+v53hyESzmnuGQQlaF2e4y55GBdD+Tnw51m+Bc=";
+    hash = "sha256-DzRqcqPMargWAqZE2YKp7RBSUl2m6whkEyIhHSvwJ+E=";
   };
 
   passthru.updateScript = nix-update-script {extraArgs = ["--version-regex" "^(\\d+\\.\\d+\\.\\d+)$"];};
